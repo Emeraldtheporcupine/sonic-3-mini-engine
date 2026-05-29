@@ -1,0 +1,53 @@
+{
+    "name": "Sonic 3 Mini Engine",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "arcade-character-animations": "github:microsoft/arcade-character-animations#v0.1.0",
+        "Timers": "github:microsoft/arcade-timers#v1.1.0",
+        "Sprite Walls": "github:Sonicblaston62/Sprite-Walls#86a57ee3f0c3cb96b06187a92ea5235b58adb687",
+        "arcade-sprite-util": "github:jwunderl/arcade-sprite-util#v0.6.0",
+        "sprite-fx": "github:kohanmathers/makecodespritefx#v1.3.0",
+        "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.2.1",
+        "Color Fading": "github:jwunderl/pxt-color#v0.2.3"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "images.g.jres",
+        "images.g.ts",
+        "tilemap.g.jres",
+        "tilemap.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "4.0.14",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "blocksprj",
+    "palette": [
+        "#000000",
+        "#FFFFFF",
+        "#FF2121",
+        "#4DD643",
+        "#B46C48",
+        "#FFF609",
+        "#0040FF",
+        "#FF4D00",
+        "#00348F",
+        "#7875FF",
+        "#1E7D12",
+        "#B4B4D8",
+        "#6B6B6B",
+        "#FCB490",
+        "#B81200",
+        "#000000"
+    ]
+}
