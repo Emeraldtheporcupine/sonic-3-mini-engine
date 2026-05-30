@@ -8,6 +8,7 @@ namespace SpriteKind {
     export const Explode = SpriteKind.create()
     export const CutBoss = SpriteKind.create()
     export const Slope = SpriteKind.create()
+    export const YellowLeftSpring = SpriteKind.create()
 }
 function StateMachine () {
     characterAnimations.loopFrames(
@@ -246,12 +247,26 @@ sprites.onCreated(SpriteKind.InVal, function (sprite) {
         })
     })
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (sprite, otherSprite) {
+    Direction = -1
+    Sonic.vx = -375
+    Rolling = true
+    animation.runImageAnimation(
+    Springs,
+    assets.animation`YSpringLBounce`,
+    50,
+    false
+    )
+    pauseUntil(() => controller.anyButton.isPressed())
+    Rolling = false
+})
 let Gibblets: Sprite[] = []
 let AmountOfRings = 0
 let InstaShield: Sprite = null
 let InstaUp = false
 let Dead = false
 let Hurt = false
+let Springs: Sprite = null
 let SlopeSprite: Sprite = null
 let RingBox: Sprite = null
 let SpindashMultiplier = 0
@@ -308,6 +323,12 @@ for (let SlopeLeftPlaces of tiles.getTilesByType(assets.tile`myTile6`)) {
     if (!(SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`transparency16`) || SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`myTile1`))) {
         sprites.destroy(SlopeSprite)
     }
+}
+for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`)) {
+    Springs = sprites.create(assets.image`YSpringL`, SpriteKind.YellowLeftSpring)
+    tiles.placeOnTile(Springs, LeftFacingYellowSprings)
+    tiles.setTileAt(LeftFacingYellowSprings, assets.tile`myTile5`)
+    Springs.z = -10
 }
 let BossStart = false
 Hurt = false
