@@ -312,6 +312,8 @@ Dead = false
 let BossPattern = 0
 let BossHealth = 8
 music.play(music.createSong(assets.song`Sky-High Isle`), music.PlaybackMode.LoopingInBackground)
+scroller.setCameraScrollingMultipliers(0.35, 0.1)
+scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 game.onUpdate(function () {
     if (Dead == false) {
         if (Rolling == false) {
