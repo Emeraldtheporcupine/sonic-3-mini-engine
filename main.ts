@@ -125,8 +125,10 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         } else {
             if (Sonic.vy == 0) {
                 music.play(music.createSoundEffect(WaveShape.Noise, 1822, 4309, 255, 0, 500, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
-                SpindashMultiplier += SpindashMultiplier * 1.5
-                info.setScore(SpindashMultiplier)
+                SpindashMultiplier = SpindashMultiplier * 1.5
+                if (SpindashMultiplier > 15) {
+                    SpindashMultiplier = 15
+                }
             }
         }
     }
@@ -274,6 +276,7 @@ tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 27))
 scene.cameraFollowSprite(Sonic)
 characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
 StateMachine()
+spriteutils.setConsoleOverlay(false)
 for (let RingBoxes of tiles.getTilesByType(assets.tile`myTile2`)) {
     RingBox = sprites.create(assets.image`blank 16-16`, SpriteKind.ItemBox)
     animation.runImageAnimation(
@@ -327,9 +330,9 @@ game.onUpdate(function () {
                 Sonic.vx += Sonic.vx * -0.1
             }
             if (controller.right.isPressed() && Sonic.vx < 0) {
-                Sonic.vx += 8
+                Sonic.vx += 10
             } else if (controller.left.isPressed() && Sonic.vx > 0) {
-                Sonic.vx += -8
+                Sonic.vx += -10
             }
             if (Sonic.vx > 250) {
                 Sonic.vx = 250

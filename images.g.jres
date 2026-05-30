@@ -59,6 +59,16 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "BG"
     },
+    "image13": {
+        "data": "hwQQABAAAAAAAAAAAAAA8AAAAAAAAADwAAAAAAAAAPAAAAAAAAAA8AAAAAAAAABPAAAAAAAAAE8AAAAAAAAATwAAAAAAAABPAAAAAAAAAE8AAAAAAADwRAAAAAAAAPBEAAAAAAAA8EQAAAAAAADwRAAAAAAAAE9EAAAAAAAAT0QAAAAAAABPRA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "CurveRStart"
+    },
+    "image14": {
+        "data": "hwQQABAAAAAAAAAAAPBERAAAAAAA8EREAAAAAADwREQAAAAAAE9ERAAAAAAAT0REAAAAAPBEREQAAAAA8ERERAAAAABPREREAAAAAE9EREQAAADwRERERAAAAE9EREREAADwREREREQAAE9ERERERADwREREREREAE9ERERERET/RERERERERA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "CurveREnd"
+    },
     "anim1": {
         "namespace": "myAnimations",
         "id": "anim1",
