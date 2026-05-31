@@ -114,7 +114,7 @@ function PlayerHurt (enemyX: number) {
     }
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (Dead == false) {
+    if (PlayerControl == true) {
         if (!(controller.down.isPressed())) {
             if (Sonic.vy == 0) {
                 SpindashMultiplier = 1
@@ -212,7 +212,7 @@ function RingFly (amountOfRings: number) {
         pauseUntil(() => Sonic.vy == 0)
         Hurt = false
     } else if (info.score() < 1) {
-        Dead = true
+        PlayerControl = true
         characterAnimations.clearCharacterState(Sonic)
         Sonic.setFlag(SpriteFlag.Ghost, true)
         Sonic.setFlag(SpriteFlag.AutoDestroy, true)
@@ -222,7 +222,7 @@ sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     timer.after(1000, function () {
         characterAnimations.setCharacterAnimationsEnabled(Sonic, false)
         music.stopAllSounds()
-        Dead = true
+        PlayerControl = true
         Direction = 1
         animation.runImageAnimation(
         Sonic,
@@ -279,7 +279,7 @@ let Gibblets: Sprite[] = []
 let AmountOfRings = 0
 let InstaShield: Sprite = null
 let InstaUp = false
-let Dead = false
+let PlayerControl = false
 let Hurt = false
 let Springs: Sprite = null
 let SlopeSprite: Sprite = null
@@ -297,12 +297,13 @@ characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.
 scene.setBackgroundImage(assets.image`BG`)
 tiles.setCurrentTilemap(tilemap`level1`)
 Sonic.ay = 400
+Sonic.z = 0
 Rolling = false
 Direction = 1
 SpindashMultiplier = 1
 scene.cameraFollowSprite(Sonic)
 scene.setBackgroundColor(7)
-tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 27))
+tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 51))
 scene.cameraFollowSprite(Sonic)
 characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
 StateMachine()
@@ -346,14 +347,16 @@ for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`))
 }
 let BossStart = false
 Hurt = false
-Dead = false
+PlayerControl = true
 let BossPattern = 0
 let BossHealth = 8
 music.play(music.createSong(assets.song`Sky-High Isle`), music.PlaybackMode.LoopingInBackground)
-scroller.setCameraScrollingMultipliers(0.35, 0.1)
+scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
+scroller.setBackgroundScrollOffset(0, -224)
+tiles.placeOnTile(Sonic, tiles.getTileLocation(25, 1))
 game.onUpdate(function () {
-    if (Dead == false) {
+    if (PlayerControl == true) {
         if (Rolling == false) {
             if (controller.right.isPressed()) {
                 Direction = 1
@@ -423,7 +426,7 @@ game.onUpdate(function () {
                 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown))
             }
         }
-        if (!(Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0) || controller.anyButton.isPressed()) {
+        if (!(Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0) || controller.anyButton.isPressed() || Sonic.vy != 0) {
             WaitTimer = 0
         } else {
             WaitTimer += 1
@@ -436,9 +439,15 @@ game.onUpdate(function () {
                 }
             }
         }
+        if (Sonic.tilemapLocation().column > 22) {
+            Sonic.z = -10
+        } else {
+            Sonic.z = 0
+        }
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
         InstaPostion.setPosition(Sonic.x, Sonic.y + 7)
+        InstaPostion.z = Sonic.z
     }
     for (let Slopes of sprites.allOfKind(SpriteKind.Slope)) {
         if (!(Sonic.overlapsWith(Slopes))) {
