@@ -269,8 +269,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (spri
     50,
     false
     )
-    pauseUntil(() => controller.anyButton.isPressed())
-    Rolling = false
+    timer.after(250, function () {
+        pauseUntil(() => controller.anyButton.isPressed())
+        Rolling = false
+    })
 })
 let WaitTimer = 0
 let Gibblets: Sprite[] = []
@@ -435,7 +437,6 @@ game.onUpdate(function () {
             }
         }
     }
-    info.setScore(WaitTimer)
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
         InstaPostion.setPosition(Sonic.x, Sonic.y + 7)
     }
