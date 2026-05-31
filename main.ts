@@ -77,6 +77,18 @@ function StateMachine () {
     75,
     characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown)
     )
+    characterAnimations.loopFrames(
+    Sonic,
+    assets.animation`SImpatientR`,
+    200,
+    characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp)
+    )
+    characterAnimations.loopFrames(
+    Sonic,
+    assets.animation`SImpatientL`,
+    200,
+    characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp)
+    )
 }
 scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
     if (sprite.isHittingTile(CollisionDirection.Bottom)) {
@@ -260,6 +272,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (spri
     pauseUntil(() => controller.anyButton.isPressed())
     Rolling = false
 })
+let WaitTimer = 0
 let Gibblets: Sprite[] = []
 let AmountOfRings = 0
 let InstaShield: Sprite = null
@@ -328,7 +341,6 @@ for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`))
     Springs = sprites.create(assets.image`YSpringL`, SpriteKind.YellowLeftSpring)
     tiles.placeOnTile(Springs, LeftFacingYellowSprings)
     tiles.setTileAt(LeftFacingYellowSprings, assets.tile`myTile5`)
-    Springs.z = -10
 }
 let BossStart = false
 Hurt = false
@@ -409,7 +421,21 @@ game.onUpdate(function () {
                 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown))
             }
         }
+        if (!(Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0) || controller.anyButton.isPressed()) {
+            WaitTimer = 0
+        } else {
+            WaitTimer += 1
+            if (WaitTimer > 240) {
+                WaitTimer = 240
+                if (Direction == 1) {
+                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp))
+                } else if (Direction == -1) {
+                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp))
+                }
+            }
+        }
     }
+    info.setScore(WaitTimer)
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
         InstaPostion.setPosition(Sonic.x, Sonic.y + 7)
     }
