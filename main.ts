@@ -354,7 +354,6 @@ music.play(music.createSong(assets.song`Sky-High Isle`), music.PlaybackMode.Loop
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -224)
-tiles.placeOnTile(Sonic, tiles.getTileLocation(25, 1))
 game.onUpdate(function () {
     if (PlayerControl == true) {
         if (Rolling == false) {
