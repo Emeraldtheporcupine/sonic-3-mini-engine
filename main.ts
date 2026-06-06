@@ -9,6 +9,7 @@ namespace SpriteKind {
     export const CutBoss = SpriteKind.create()
     export const Slope = SpriteKind.create()
     export const YellowLeftSpring = SpriteKind.create()
+    export const Grab = SpriteKind.create()
 }
 function StateMachine () {
     characterAnimations.loopFrames(
@@ -282,6 +283,7 @@ let InstaUp = false
 let PlayerControl = false
 let Hurt = false
 let Springs: Sprite = null
+let SwingGrab: Sprite = null
 let SlopeSprite: Sprite = null
 let RingBox: Sprite = null
 let SpindashMultiplier = 0
@@ -301,10 +303,8 @@ Sonic.z = 0
 Rolling = false
 Direction = 1
 SpindashMultiplier = 1
-scene.cameraFollowSprite(Sonic)
 scene.setBackgroundColor(7)
 tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 51))
-scene.cameraFollowSprite(Sonic)
 characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
 StateMachine()
 spriteutils.setConsoleOverlay(false)
@@ -340,6 +340,10 @@ for (let SlopeLeftPlaces of tiles.getTilesByType(assets.tile`myTile6`)) {
         sprites.destroy(SlopeSprite)
     }
 }
+for (let VineSwings of tiles.getTilesByType(assets.tile`myTile22`)) {
+    SwingGrab = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
+    tiles.placeOnTile(SwingGrab, VineSwings)
+}
 for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`)) {
     Springs = sprites.create(assets.image`YSpringL`, SpriteKind.YellowLeftSpring)
     tiles.placeOnTile(Springs, LeftFacingYellowSprings)
@@ -353,7 +357,7 @@ let BossHealth = 8
 music.play(music.createSong(assets.song`Sky-High Isle`), music.PlaybackMode.LoopingInBackground)
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
-scroller.setBackgroundScrollOffset(0, -224)
+scroller.setBackgroundScrollOffset(0, -118)
 game.onUpdate(function () {
     if (PlayerControl == true) {
         if (Rolling == false) {
@@ -440,8 +444,10 @@ game.onUpdate(function () {
         }
         if (Sonic.tilemapLocation().column > 22) {
             Sonic.z = -10
+            scene.centerCameraAt(Sonic.x, Sonic.y - 0)
         } else {
             Sonic.z = 0
+            scene.centerCameraAt(Sonic.x, 800)
         }
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
