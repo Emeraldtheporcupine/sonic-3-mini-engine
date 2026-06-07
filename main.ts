@@ -167,6 +167,18 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
+// Created by Dad
+function SetBallPosition (CenterX: number, CenterY: number, Grabber: Sprite) {
+    sprites.setDataNumber(Grabber, "X", CenterX + Radius * Math.cos(BallCurrentRadi))
+    sprites.setDataNumber(Grabber, "Y", CenterY + Radius * Math.sin(BallCurrentRadi))
+    Grabber.setPosition(sprites.readDataNumber(Grabber, "X"), sprites.readDataNumber(Grabber, "Y"))
+    if (BallCurrentRadi < 0) {
+        BallVelocity = 0.01
+    } else if (BallCurrentRadi > 3) {
+        BallVelocity = -0.01
+    }
+    BallCurrentRadi += BallVelocity
+}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, otherSprite) {
     if (Rolling == true || sprite.vy != 0) {
         sprite.vy = -125
@@ -180,12 +192,27 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, other
         info.changeScoreBy(10)
     }
 })
+spriteutils.createRenderable(-10, function (screen2) {
+    for (let VineSwings of sprites.allOfKind(SpriteKind.Grab)) {
+        SetBallPosition(VineSwings.x, VineSwings.y, VineSwings)
+    }
+})
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Sonic.vy == 0 && Math.abs(Sonic.vx) > 19) {
         Rolling = true
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
+// Created by Dad
+function InitVine (X: number, Y: number, Grabber: tiles.Location) {
+    Radius = 40
+    Ball = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
+    Ball.setPosition(X, Y)
+    BallCurrentRadi = 0
+    BallVelocity = 0.01
+    GrabberList.push(Grabber)
+    HandleList.push(Ball)
+}
 function RingFly (amountOfRings: number) {
     if (info.score() > 0) {
         AmountOfRings = amountOfRings
@@ -278,14 +305,19 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (spri
 let WaitTimer = 0
 let Gibblets: Sprite[] = []
 let AmountOfRings = 0
+let Ball: Sprite = null
+let Radius = 0
+let BallVelocity = 0
+let BallCurrentRadi = 0
 let InstaShield: Sprite = null
 let InstaUp = false
 let PlayerControl = false
 let Hurt = false
 let Springs: Sprite = null
-let SwingGrab: Sprite = null
 let SlopeSprite: Sprite = null
 let RingBox: Sprite = null
+let HandleList: Sprite[] = []
+let GrabberList: tiles.Location[] = []
 let SpindashMultiplier = 0
 let Direction = 0
 let Rolling = false
@@ -308,6 +340,8 @@ tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 51))
 characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
 StateMachine()
 spriteutils.setConsoleOverlay(false)
+GrabberList = []
+HandleList = []
 for (let RingBoxes of tiles.getTilesByType(assets.tile`myTile2`)) {
     RingBox = sprites.create(assets.image`blank 16-16`, SpriteKind.ItemBox)
     animation.runImageAnimation(
@@ -341,8 +375,7 @@ for (let SlopeLeftPlaces of tiles.getTilesByType(assets.tile`myTile6`)) {
     }
 }
 for (let VineSwings of tiles.getTilesByType(assets.tile`myTile22`)) {
-    SwingGrab = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
-    tiles.placeOnTile(SwingGrab, VineSwings)
+    InitVine(VineSwings.column * 16, VineSwings.row * 16, VineSwings)
 }
 for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`)) {
     Springs = sprites.create(assets.image`YSpringL`, SpriteKind.YellowLeftSpring)
