@@ -90,6 +90,18 @@ function StateMachine () {
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp)
     )
+    characterAnimations.loopFrames(
+    Sonic,
+    assets.animation`SSkidR`,
+    200,
+    characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
+    )
+    characterAnimations.loopFrames(
+    Sonic,
+    assets.animation`SSkidL`,
+    200,
+    characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+    )
 }
 scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
     if (sprite.isHittingTile(CollisionDirection.Bottom)) {
@@ -167,15 +179,14 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
-// Created by Dad
-function SetBallPosition (CenterX: number, CenterY: number, Grabber: Sprite) {
-    sprites.setDataNumber(Grabber, "X", CenterX + Radius * Math.cos(BallCurrentRadi))
-    sprites.setDataNumber(Grabber, "Y", CenterY + Radius * Math.sin(BallCurrentRadi))
-    Grabber.setPosition(sprites.readDataNumber(Grabber, "X"), sprites.readDataNumber(Grabber, "Y"))
+function SetBallPosition (CenterX: number, CenterY: number, Handle: Sprite) {
+    sprites.setDataNumber(Handle, "X", CenterX + Radius * Math.cos(BallCurrentRadi))
+    sprites.setDataNumber(Handle, "Y", CenterY + Radius * Math.sin(BallCurrentRadi))
+    Handle.setPosition(sprites.readDataNumber(Handle, "X"), sprites.readDataNumber(Handle, "Y"))
     if (BallCurrentRadi < 0) {
-        BallVelocity = 0.01
+        BallVelocity = 0.025
     } else if (BallCurrentRadi > 3) {
-        BallVelocity = -0.01
+        BallVelocity = -0.025
     }
     BallCurrentRadi += BallVelocity
 }
@@ -192,9 +203,11 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, other
         info.changeScoreBy(10)
     }
 })
-spriteutils.createRenderable(-10, function (screen2) {
-    for (let VineSwings of sprites.allOfKind(SpriteKind.Grab)) {
-        SetBallPosition(VineSwings.x, VineSwings.y, VineSwings)
+spriteutils.createRenderable(0, function (screen2) {
+    for (let tempGrabber = 0; tempGrabber <= GrabberList.length; tempGrabber++) {
+        if (HandleList[tempGrabber]) {
+            SetBallPosition(GrabberList[tempGrabber].x, GrabberList[tempGrabber].y, HandleList[tempGrabber])
+        }
     }
 })
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -205,13 +218,13 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 // Created by Dad
 function InitVine (X: number, Y: number, Grabber: tiles.Location) {
-    Radius = 40
-    Ball = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
-    Ball.setPosition(X, Y)
-    BallCurrentRadi = 0
-    BallVelocity = 0.01
     GrabberList.push(Grabber)
-    HandleList.push(Ball)
+    Radius = 40
+    tempHandle = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
+    tempHandle.setPosition(X + 8, Y + Radius)
+    BallCurrentRadi = 0
+    BallVelocity = 0.025
+    HandleList.push(tempHandle)
 }
 function RingFly (amountOfRings: number) {
     if (info.score() > 0) {
@@ -305,10 +318,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (spri
 let WaitTimer = 0
 let Gibblets: Sprite[] = []
 let AmountOfRings = 0
-let Ball: Sprite = null
-let Radius = 0
+let tempHandle: Sprite = null
 let BallVelocity = 0
 let BallCurrentRadi = 0
+let Radius = 0
 let InstaShield: Sprite = null
 let InstaUp = false
 let PlayerControl = false
@@ -376,6 +389,7 @@ for (let SlopeLeftPlaces of tiles.getTilesByType(assets.tile`myTile6`)) {
 }
 for (let VineSwings of tiles.getTilesByType(assets.tile`myTile22`)) {
     InitVine(VineSwings.column * 16, VineSwings.row * 16, VineSwings)
+    tiles.setTileAt(VineSwings, assets.tile`transparency16`)
 }
 for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`)) {
     Springs = sprites.create(assets.image`YSpringL`, SpriteKind.YellowLeftSpring)
@@ -441,6 +455,10 @@ game.onUpdate(function () {
                     characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight))
                 } else if (Sonic.vx < -199) {
                     characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft))
+                } else if (controller.right.isPressed() && Sonic.vx < 0) {
+                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
+                } else if (controller.left.isPressed() && Sonic.vx > 0) {
+                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
                 }
             } else {
                 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingUp))
@@ -475,13 +493,13 @@ game.onUpdate(function () {
                 }
             }
         }
-        if (Sonic.tilemapLocation().column > 22) {
-            Sonic.z = -10
-            scene.centerCameraAt(Sonic.x, Sonic.y - 0)
-        } else {
-            Sonic.z = 0
-            scene.centerCameraAt(Sonic.x, 800)
-        }
+    }
+    if (Sonic.tilemapLocation().column > 22) {
+        Sonic.z = -10
+        scene.centerCameraAt(Sonic.x, Sonic.y - 0)
+    } else {
+        Sonic.z = 0
+        scene.centerCameraAt(Sonic.x, 800)
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
         InstaPostion.setPosition(Sonic.x, Sonic.y + 7)
@@ -494,6 +512,33 @@ game.onUpdate(function () {
             Sonic.ay = 0
             Sonic.vy = 0
             Sonic.y += Math.abs(Sonic.vx) / -50 - 1
+        }
+    }
+    for (let value of sprites.allOfKind(SpriteKind.Grab)) {
+        if (Sonic.overlapsWith(value)) {
+            PlayerControl = false
+            Sonic.ay = 0
+            Sonic.vx = 0
+            Sonic.vy = 0
+            Sonic.setPosition(value.x, value.y)
+            Sonic.y += -5
+            if (Direction == 1) {
+                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
+            } else if (Direction == -1) {
+                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
+            }
+            if (controller.A.isPressed()) {
+                Sonic.ay = 400
+                PlayerControl = true
+                Sonic.vy = -100
+                value.setKind(SpriteKind.InVal)
+                timer.after(500, function () {
+                    value.setKind(SpriteKind.Grab)
+                })
+            }
+        } else {
+            Sonic.ay = 400
+            PlayerControl = true
         }
     }
 })
