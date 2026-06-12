@@ -132,7 +132,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             if (Sonic.vy == 0) {
                 SpindashMultiplier = 1
                 Rolling = false
-                Sonic.vy = -200
+                Sonic.vy = -400
                 music.play(music.createSoundEffect(WaveShape.Square, 642, 2015, 255, 0, 300, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             } else if (InstaUp == false) {
                 InstaUp = true
@@ -343,7 +343,7 @@ Sonic = sprites.create(assets.image`Sonic Stand`, SpriteKind.Player)
 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
 scene.setBackgroundImage(assets.image`BG`)
 tiles.setCurrentTilemap(tilemap`level1`)
-Sonic.ay = 400
+Sonic.ay = 1250
 Sonic.z = 0
 Rolling = false
 Direction = 1
@@ -507,7 +507,7 @@ game.onUpdate(function () {
     }
     for (let Slopes of sprites.allOfKind(SpriteKind.Slope)) {
         if (!(Sonic.overlapsWith(Slopes))) {
-            Sonic.ay = 400
+            Sonic.ay = 1250
         } else {
             Sonic.ay = 0
             Sonic.vy = 0
@@ -528,16 +528,17 @@ game.onUpdate(function () {
                 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
             }
             if (controller.A.isPressed()) {
-                Sonic.ay = 400
+                Sonic.ay = 1250
                 PlayerControl = true
-                Sonic.vy = -100
+                Sonic.vy = -300
+                Sonic.vx = Direction * 200
                 value.setKind(SpriteKind.InVal)
                 timer.after(500, function () {
                     value.setKind(SpriteKind.Grab)
                 })
             }
         } else {
-            Sonic.ay = 400
+            Sonic.ay = 1250
             PlayerControl = true
         }
     }
