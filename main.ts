@@ -132,7 +132,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             if (Sonic.vy == 0) {
                 SpindashMultiplier = 1
                 Rolling = false
-                Sonic.vy = -400
+                Sonic.vy = -425
                 music.play(music.createSoundEffect(WaveShape.Square, 642, 2015, 255, 0, 300, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             } else if (InstaUp == false) {
                 InstaUp = true
@@ -179,17 +179,6 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
-function SetBallPosition (CenterX: number, CenterY: number, Handle: Sprite) {
-    sprites.setDataNumber(Handle, "X", CenterX + Radius * Math.cos(BallCurrentRadi))
-    sprites.setDataNumber(Handle, "Y", CenterY + Radius * Math.sin(BallCurrentRadi))
-    Handle.setPosition(sprites.readDataNumber(Handle, "X"), sprites.readDataNumber(Handle, "Y"))
-    if (BallCurrentRadi < 0) {
-        BallVelocity = 0.025
-    } else if (BallCurrentRadi > 3) {
-        BallVelocity = -0.025
-    }
-    BallCurrentRadi += BallVelocity
-}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, otherSprite) {
     if (Rolling == true || sprite.vy != 0) {
         sprite.vy = -125
@@ -203,10 +192,26 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, other
         info.changeScoreBy(10)
     }
 })
+function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
+    sprites.setDataNumber(Handle, "X", CenterX + Radius * Math.cos(BallCurrentRadi))
+    sprites.setDataNumber(Handle, "Y", CenterY + Radius * Math.sin(BallCurrentRadi))
+    Handle.setPosition(sprites.readDataNumber(Handle, "X"), sprites.readDataNumber(Handle, "Y"))
+    if (BallCurrentRadi < 0) {
+        BallVelocity = 0.025
+    } else if (BallCurrentRadi > 3) {
+        BallVelocity = -0.025
+    }
+    BallCurrentRadi += BallVelocity
+}
+spriteutils.createRenderable(0, function (screen2) {
+    for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
+        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+    }
+})
 spriteutils.createRenderable(0, function (screen2) {
     for (let tempGrabber = 0; tempGrabber <= GrabberList.length; tempGrabber++) {
         if (HandleList[tempGrabber]) {
-            SetBallPosition(GrabberList[tempGrabber].x, GrabberList[tempGrabber].y, HandleList[tempGrabber])
+            SetHandlePosition(GrabberList[tempGrabber].x, GrabberList[tempGrabber].y, HandleList[tempGrabber])
         }
     }
 })
@@ -216,12 +221,13 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
-// Created by Dad
 function InitVine (X: number, Y: number, Grabber: tiles.Location) {
     GrabberList.push(Grabber)
-    Radius = 40
+    Radius = 60
     tempHandle = sprites.create(assets.image`Grabber`, SpriteKind.Grab)
     tempHandle.setPosition(X + 8, Y + Radius)
+    sprites.setDataNumber(tempHandle, "SpawnX", X + 8)
+    sprites.setDataNumber(tempHandle, "SpawnY", Y)
     BallCurrentRadi = 0
     BallVelocity = 0.025
     HandleList.push(tempHandle)
@@ -514,13 +520,13 @@ game.onUpdate(function () {
             Sonic.y += Math.abs(Sonic.vx) / -50 - 1
         }
     }
-    for (let value of sprites.allOfKind(SpriteKind.Grab)) {
-        if (Sonic.overlapsWith(value)) {
+    for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
+        if (Sonic.overlapsWith(GrabVines)) {
             PlayerControl = false
             Sonic.ay = 0
             Sonic.vx = 0
             Sonic.vy = 0
-            Sonic.setPosition(value.x, value.y)
+            Sonic.setPosition(GrabVines.x, GrabVines.y)
             Sonic.y += -5
             if (Direction == 1) {
                 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
@@ -532,9 +538,9 @@ game.onUpdate(function () {
                 PlayerControl = true
                 Sonic.vy = -300
                 Sonic.vx = Direction * 200
-                value.setKind(SpriteKind.InVal)
+                GrabVines.setKind(SpriteKind.InVal)
                 timer.after(500, function () {
-                    value.setKind(SpriteKind.Grab)
+                    GrabVines.setKind(SpriteKind.Grab)
                 })
             }
         } else {
