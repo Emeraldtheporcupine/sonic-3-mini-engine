@@ -94,13 +94,13 @@ function StateMachine () {
     Sonic,
     assets.animation`SSkidR`,
     200,
-    characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
+    characterAnimations.rule(Predicate.FacingRight, Predicate.MovingLeft, Predicate.Moving)
     )
     characterAnimations.loopFrames(
     Sonic,
     assets.animation`SSkidL`,
     200,
-    characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+    characterAnimations.rule(Predicate.FacingLeft, Predicate.MovingRight, Predicate.Moving)
     )
 }
 scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
@@ -185,7 +185,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, other
         otherSprite.setKind(SpriteKind.NA)
         animation.runImageAnimation(
         otherSprite,
-        assets.animation`Destroyed`,
+        assets.animation`RBDestroyed`,
         50,
         true
         )
@@ -206,6 +206,8 @@ function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
 spriteutils.createRenderable(0, function (screen2) {
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
         screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x - 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") - 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x + 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") + 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
     }
 })
 spriteutils.createRenderable(0, function (screen2) {
@@ -251,7 +253,7 @@ function RingFly (amountOfRings: number) {
             GibbletSprite.vx = randint(-35, 35)
             animation.runImageAnimation(
             GibbletSprite,
-            assets.animation`Ring0`,
+            assets.animation`Ring`,
             75,
             true
             )
@@ -365,7 +367,7 @@ for (let RingBoxes of tiles.getTilesByType(assets.tile`myTile2`)) {
     RingBox = sprites.create(assets.image`blank 16-16`, SpriteKind.ItemBox)
     animation.runImageAnimation(
     RingBox,
-    assets.animation`Ring`,
+    assets.animation`RingBox`,
     50,
     true
     )
@@ -411,6 +413,7 @@ music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMod
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
+tiles.placeOnTile(Sonic, tiles.getTileLocation(25, 35))
 game.onUpdate(function () {
     if (PlayerControl == true) {
         if (Rolling == false) {
@@ -523,22 +526,34 @@ game.onUpdate(function () {
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
         if (Sonic.overlapsWith(GrabVines)) {
             PlayerControl = false
+            characterAnimations.clearCharacterState(Sonic)
+            if (Direction == 1) {
+                animation.runImageAnimation(
+                Sonic,
+                assets.animation`SHangR`,
+                200,
+                false
+                )
+            } else if (Direction == -1) {
+                animation.runImageAnimation(
+                Sonic,
+                assets.animation`SHangL`,
+                200,
+                false
+                )
+            }
             Sonic.ay = 0
             Sonic.vx = 0
             Sonic.vy = 0
             Sonic.setPosition(GrabVines.x, GrabVines.y)
-            Sonic.y += -5
-            if (Direction == 1) {
-                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
-            } else if (Direction == -1) {
-                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
-            }
+            Direction = Math.abs(BallVelocity) / BallVelocity * -1
             if (controller.A.isPressed()) {
                 Sonic.ay = 1250
                 PlayerControl = true
                 Sonic.vy = -300
                 Sonic.vx = Direction * 200
                 GrabVines.setKind(SpriteKind.InVal)
+                animation.stopAnimation(animation.AnimationTypes.All, Sonic)
                 timer.after(500, function () {
                     GrabVines.setKind(SpriteKind.Grab)
                 })
