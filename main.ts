@@ -407,7 +407,7 @@ Hurt = false
 PlayerControl = true
 let BossPattern = 0
 let BossHealth = 8
-music.play(music.createSong(assets.song`Sky-High Isle`), music.PlaybackMode.LoopingInBackground)
+music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMode.LoopingInBackground)
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
