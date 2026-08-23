@@ -103,6 +103,31 @@ function StateMachine () {
     characterAnimations.rule(Predicate.FacingLeft, Predicate.MovingRight, Predicate.Moving)
     )
 }
+function Camera () {
+    if (PlayerControl == true) {
+        if (Direction == 1) {
+            CameraTargetX = Sonic.x + 35
+        } else if (Direction == -1) {
+            CameraTargetX = Sonic.x - 35
+        } else {
+            CameraTargetX = Sonic.x
+        }
+        if (Math.abs(scene.cameraProperty(CameraProperty.X) - CameraTargetX) > 2 || Math.abs(scene.cameraProperty(CameraProperty.Y) - CurrentCameraY) > 0) {
+            if (CurrentCameraY < Sonic.y) {
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) + (Math.abs(Sonic.y) - CurrentCameraY) * gamma
+            }
+            if (CurrentCameraY > Sonic.y) {
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - (CurrentCameraY - Math.abs(Sonic.y)) * gamma
+            }
+            if (scene.cameraProperty(CameraProperty.X) < CameraTargetX) {
+                CurrentCameraX = scene.cameraProperty(CameraProperty.X) + (CameraTargetX - scene.cameraProperty(CameraProperty.X)) * alpha
+            } else if (scene.cameraProperty(CameraProperty.X) > CameraTargetX) {
+                CurrentCameraX = scene.cameraProperty(CameraProperty.X) - (scene.cameraProperty(CameraProperty.X) - CameraTargetX) * alpha
+            }
+        }
+        scene.centerCameraAt(CurrentCameraX, CurrentCameraY)
+    }
+}
 scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
     if (sprite.isHittingTile(CollisionDirection.Bottom)) {
         sprite.vy = sprite.vy * -0.85
@@ -332,6 +357,9 @@ let BallCurrentRadi = 0
 let Radius = 0
 let InstaShield: Sprite = null
 let InstaUp = false
+let CurrentCameraX = 0
+let CurrentCameraY = 0
+let CameraTargetX = 0
 let PlayerControl = false
 let Hurt = false
 let Springs: Sprite = null
@@ -343,10 +371,14 @@ let SpindashMultiplier = 0
 let Direction = 0
 let Rolling = false
 let Sonic: Sprite = null
+let gamma = 0
+let alpha = 0
 namespace userconfig {
     export const ARCADE_SCREEN_WIDTH = 320
     export const ARCADE_SCREEN_HEIGHT = 224
 }
+alpha = 0.2
+gamma = 0.4
 Sonic = sprites.create(assets.image`Sonic Stand`, SpriteKind.Player)
 characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
 scene.setBackgroundImage(assets.image`BG`)
@@ -413,7 +445,6 @@ music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMod
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
-tiles.placeOnTile(Sonic, tiles.getTileLocation(25, 35))
 game.onUpdate(function () {
     if (PlayerControl == true) {
         if (Rolling == false) {
@@ -505,7 +536,7 @@ game.onUpdate(function () {
     }
     if (Sonic.tilemapLocation().column > 22) {
         Sonic.z = -10
-        scene.centerCameraAt(Sonic.x, Sonic.y - 0)
+        Camera()
     } else {
         Sonic.z = 0
         scene.centerCameraAt(Sonic.x, 800)
@@ -520,7 +551,7 @@ game.onUpdate(function () {
         } else {
             Sonic.ay = 0
             Sonic.vy = 0
-            Sonic.y += Math.abs(Sonic.vx) / -50 - 1
+            Sonic.y += Math.abs(Sonic.vx) / -50 - 0.25
         }
     }
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
