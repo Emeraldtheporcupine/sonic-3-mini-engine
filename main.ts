@@ -12,6 +12,13 @@ namespace SpriteKind {
     export const Grab = SpriteKind.create()
 }
 function StateMachine () {
+    idleLeft = createFlipped(assets.animation`SStandR`)
+    walkLeft = createFlipped(assets.animation`SWalkR`)
+    runLeft = createFlipped(assets.animation`SSprintR`)
+    crouchLeft = createFlipped(assets.animation`SCrouchR`)
+    revLeft = createFlipped(assets.animation`SSpindashR`)
+    waitLeft = createFlipped(assets.animation`SImpatientR`)
+    skidLeft = createFlipped(assets.animation`SSkidR`)
     characterAnimations.loopFrames(
     Sonic,
     assets.animation`SStandR`,
@@ -20,7 +27,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SStandL`,
+    idleLeft,
     200,
     characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft)
     )
@@ -32,7 +39,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SWalkL`,
+    walkLeft,
     100,
     characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
     )
@@ -44,7 +51,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SSprintL`,
+    runLeft,
     100,
     characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
     )
@@ -62,7 +69,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SCrouchL`,
+    crouchLeft,
     200,
     characterAnimations.rule(characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown))
     )
@@ -74,7 +81,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SSpindashL`,
+    revLeft,
     75,
     characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown)
     )
@@ -86,7 +93,7 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SImpatientL`,
+    waitLeft,
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp)
     )
@@ -98,10 +105,19 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     Sonic,
-    assets.animation`SSkidL`,
+    skidLeft,
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.MovingRight, Predicate.Moving)
     )
+}
+function createFlipped (anim: Image[]) {
+    tempList = []
+    for (let Frame = 0; Frame <= anim.length - 1; Frame++) {
+        tempImage = anim[Frame]
+        tempImage.flipX()
+        tempList.push(tempImage)
+    }
+    return tempList
 }
 function Camera () {
     if (PlayerControl == true) {
@@ -360,6 +376,15 @@ let InstaUp = false
 let CurrentCameraX = 0
 let CurrentCameraY = 0
 let CameraTargetX = 0
+let tempImage: Image = null
+let tempList: Image[] = []
+let skidLeft: Image[] = []
+let waitLeft: Image[] = []
+let revLeft: Image[] = []
+let crouchLeft: Image[] = []
+let runLeft: Image[] = []
+let walkLeft: Image[] = []
+let idleLeft: Image[] = []
 let PlayerControl = false
 let Hurt = false
 let Springs: Sprite = null
@@ -392,6 +417,7 @@ scene.setBackgroundColor(7)
 tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 51))
 characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
 StateMachine()
+Camera()
 spriteutils.setConsoleOverlay(false)
 GrabberList = []
 HandleList = []
