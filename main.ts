@@ -294,7 +294,24 @@ function RingFly (amountOfRings: number) {
             GibbletSprite.vx = randint(-35, 35)
             animation.runImageAnimation(
             GibbletSprite,
-            assets.animation`Ring`,
+            [img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                `],
             75,
             true
             )
@@ -398,6 +415,8 @@ let Rolling = false
 let Sonic: Sprite = null
 let gamma = 0
 let alpha = 0
+let BossPattern = 0
+let BossStart = false
 namespace userconfig {
     export const ARCADE_SCREEN_WIDTH = 320
     export const ARCADE_SCREEN_HEIGHT = 224
@@ -462,10 +481,8 @@ for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`))
     tiles.placeOnTile(Springs, LeftFacingYellowSprings)
     tiles.setTileAt(LeftFacingYellowSprings, assets.tile`myTile5`)
 }
-let BossStart = false
 Hurt = false
 PlayerControl = true
-let BossPattern = 0
 let BossHealth = 8
 music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMode.LoopingInBackground)
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
@@ -580,8 +597,8 @@ game.onUpdate(function () {
             Sonic.y += Math.abs(Sonic.vx) / -50 - 0.25
         }
     }
-    for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
-        if (Sonic.overlapsWith(GrabVines)) {
+    for (let GrabVines2 of sprites.allOfKind(SpriteKind.Grab)) {
+        if (Sonic.overlapsWith(GrabVines2)) {
             PlayerControl = false
             characterAnimations.clearCharacterState(Sonic)
             if (Direction == 1) {
@@ -602,17 +619,17 @@ game.onUpdate(function () {
             Sonic.ay = 0
             Sonic.vx = 0
             Sonic.vy = 0
-            Sonic.setPosition(GrabVines.x, GrabVines.y)
+            Sonic.setPosition(GrabVines2.x, GrabVines2.y)
             Direction = Math.abs(BallVelocity) / BallVelocity * -1
             if (controller.A.isPressed()) {
                 Sonic.ay = 1250
                 PlayerControl = true
                 Sonic.vy = -300
                 Sonic.vx = Direction * 200
-                GrabVines.setKind(SpriteKind.InVal)
+                GrabVines2.setKind(SpriteKind.InVal)
                 animation.stopAnimation(animation.AnimationTypes.All, Sonic)
                 timer.after(500, function () {
-                    GrabVines.setKind(SpriteKind.Grab)
+                    GrabVines2.setKind(SpriteKind.Grab)
                 })
             }
         } else {
