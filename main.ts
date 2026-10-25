@@ -10,6 +10,7 @@ namespace SpriteKind {
     export const Slope = SpriteKind.create()
     export const YellowLeftSpring = SpriteKind.create()
     export const Grab = SpriteKind.create()
+    export const animOverlay = SpriteKind.create()
 }
 function StateMachine () {
     idleLeft = createFlipped(assets.animation`SStandR`)
@@ -20,91 +21,91 @@ function StateMachine () {
     waitLeft = createFlipped(assets.animation`SImpatientR`)
     skidLeft = createFlipped(assets.animation`SSkidR`)
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SStandR`,
     200,
     characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     idleLeft,
     200,
     characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SWalkR`,
     100,
     characterAnimations.rule(Predicate.Moving, Predicate.FacingRight)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     walkLeft,
     100,
     characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SSprintR`,
     100,
     characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     runLeft,
     100,
     characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SRoll_Jump`,
     75,
     characterAnimations.rule(Predicate.MovingUp)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SCrouchR`,
     200,
     characterAnimations.rule(characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown))
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     crouchLeft,
     200,
     characterAnimations.rule(characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown))
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SSpindashR`,
     75,
     characterAnimations.rule(Predicate.MovingRight, Predicate.FacingDown)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     revLeft,
     75,
     characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SImpatientR`,
     200,
     characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     waitLeft,
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     assets.animation`SSkidR`,
     200,
     characterAnimations.rule(Predicate.FacingRight, Predicate.MovingLeft, Predicate.Moving)
     )
     characterAnimations.loopFrames(
-    Sonic,
+    sonicOverlay,
     skidLeft,
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.MovingRight, Predicate.Moving)
@@ -122,18 +123,18 @@ function createFlipped (anim: Image[]) {
 function Camera () {
     if (PlayerControl == true) {
         if (Direction == 1) {
-            CameraTargetX = Sonic.x + 35
+            CameraTargetX = sonicHitbox.x + 35
         } else if (Direction == -1) {
-            CameraTargetX = Sonic.x - 35
+            CameraTargetX = sonicHitbox.x - 35
         } else {
-            CameraTargetX = Sonic.x
+            CameraTargetX = sonicHitbox.x
         }
         if (Math.abs(scene.cameraProperty(CameraProperty.X) - CameraTargetX) > 2 || Math.abs(scene.cameraProperty(CameraProperty.Y) - CurrentCameraY) > 0) {
-            if (CurrentCameraY < Sonic.y) {
-                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) + (Math.abs(Sonic.y) - CurrentCameraY) * gamma
+            if (CurrentCameraY < sonicHitbox.y) {
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) + (Math.abs(sonicHitbox.y) - CurrentCameraY) * gamma
             }
-            if (CurrentCameraY > Sonic.y) {
-                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - (CurrentCameraY - Math.abs(Sonic.y)) * gamma
+            if (CurrentCameraY > sonicHitbox.y) {
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - (CurrentCameraY - Math.abs(sonicHitbox.y)) * gamma
             }
             if (scene.cameraProperty(CameraProperty.X) < CameraTargetX) {
                 CurrentCameraX = scene.cameraProperty(CameraProperty.X) + (CameraTargetX - scene.cameraProperty(CameraProperty.X)) * alpha
@@ -155,14 +156,64 @@ scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
         sprite.vx = sprite.vx * -1
     }
 })
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (sonicHitbox.vy != 0 && !(sonicSuperForm)) {
+        sonicSuperForm = true
+        transforming = true
+        sonicHitbox.vx = 0
+        sonicHitbox.vy = 0
+        sonicHitbox.ay = 0
+        characterAnimations.clearCharacterState(sonicOverlay)
+        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
+        animation.runImageAnimation(
+        sonicOverlay,
+        assets.animation`STransformR`,
+        100,
+        true
+        )
+        color.setColor(6, color.parseColorString("#fcfc00"))
+        timer.background(function () {
+            color.setColor(8, color.parseColorString("#b4b400"), 200)
+        })
+        timer.after(500, function () {
+            transforming = false
+            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
+            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+        })
+    } else if (sonicHitbox.vy != 0 && sonicSuperForm) {
+        sonicSuperForm = true
+        transforming = true
+        sonicHitbox.vx = 0
+        sonicHitbox.vy = 0
+        sonicHitbox.ay = 0
+        characterAnimations.clearCharacterState(sonicOverlay)
+        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
+        animation.runImageAnimation(
+        sonicOverlay,
+        assets.animation`STransformR`,
+        100,
+        false
+        )
+        color.setColor(6, color.parseColorString("#0040FF"))
+        timer.background(function () {
+            color.setColor(8, color.parseColorString("#00348F"), 500)
+        })
+        timer.after(500, function () {
+            sonicSuperForm = false
+            transforming = false
+            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
+            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+        })
+    }
+})
 function PlayerHurt (enemyX: number) {
     if (Hurt == false) {
         Hurt = true
-        Sonic.vy = -125
-        if (enemyX > Sonic.x) {
-            Sonic.vx = -100
-        } else if (enemyX < Sonic.x) {
-            Sonic.vx = 100
+        sonicHitbox.vy = -125
+        if (enemyX > sonicHitbox.x) {
+            sonicHitbox.vx = -100
+        } else if (enemyX < sonicHitbox.x) {
+            sonicHitbox.vx = 100
         }
         RingFly(info.score())
     }
@@ -170,10 +221,10 @@ function PlayerHurt (enemyX: number) {
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (PlayerControl == true) {
         if (!(controller.down.isPressed())) {
-            if (Sonic.vy == 0) {
+            if (sonicHitbox.vy == 0) {
                 SpindashMultiplier = 1
                 Rolling = false
-                Sonic.vy = -425
+                sonicHitbox.vy = -425
                 music.play(music.createSoundEffect(WaveShape.Square, 642, 2015, 255, 0, 300, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             } else if (InstaUp == false) {
                 InstaUp = true
@@ -190,8 +241,8 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
                 music.play(music.createSoundEffect(WaveShape.Noise, 3520, 3748, 255, 0, 100, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             }
         } else {
-            if (Sonic.vy == 0) {
-                music.play(music.createSoundEffect(WaveShape.Noise, 1822, 4309, 255, 0, 500, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
+            if (sonicHitbox.vy == 0) {
+                music.play(music.createSoundEffect(WaveShape.Square, 446, 1071, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
                 SpindashMultiplier = SpindashMultiplier * 1.5
                 if (SpindashMultiplier > 15) {
                     SpindashMultiplier = 15
@@ -213,8 +264,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.DropRing, function (sprite, othe
     sprites.destroy(otherSprite)
 })
 controller.down.onEvent(ControllerButtonEvent.Released, function () {
-    if (Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0 && SpindashMultiplier > 1) {
-        Sonic.vx = SpindashMultiplier * (Direction * 100)
+    if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0 && SpindashMultiplier > 1) {
+        sonicHitbox.vx = SpindashMultiplier * (Direction * 100)
         SpindashMultiplier = 1
         Rolling = true
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
@@ -259,7 +310,7 @@ spriteutils.createRenderable(0, function (screen2) {
     }
 })
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (Sonic.vy == 0 && Math.abs(Sonic.vx) > 19) {
+    if (sonicHitbox.vy == 0 && Math.abs(sonicHitbox.vx) > 19) {
         Rolling = true
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
@@ -288,7 +339,7 @@ function RingFly (amountOfRings: number) {
             Gibblets.unshift(sprites.create(assets.image`Gibble`, SpriteKind.InVal))
         }
         for (let GibbletSprite of Gibblets) {
-            GibbletSprite.setPosition(Sonic.x, Sonic.y)
+            GibbletSprite.setPosition(sonicHitbox.x, sonicHitbox.y)
             GibbletSprite.vy = randint(-150, -100)
             GibbletSprite.ay = 400
             GibbletSprite.vx = randint(-35, 35)
@@ -316,29 +367,29 @@ function RingFly (amountOfRings: number) {
             true
             )
         }
-        pauseUntil(() => Sonic.vy == 0)
+        pauseUntil(() => sonicHitbox.vy == 0)
         Hurt = false
     } else if (info.score() < 1) {
         PlayerControl = true
-        characterAnimations.clearCharacterState(Sonic)
-        Sonic.setFlag(SpriteFlag.Ghost, true)
-        Sonic.setFlag(SpriteFlag.AutoDestroy, true)
+        characterAnimations.clearCharacterState(sonicHitbox)
+        sonicHitbox.setFlag(SpriteFlag.Ghost, true)
+        sonicHitbox.setFlag(SpriteFlag.AutoDestroy, true)
     }
 }
 sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
     timer.after(1000, function () {
-        characterAnimations.setCharacterAnimationsEnabled(Sonic, false)
+        characterAnimations.setCharacterAnimationsEnabled(sonicHitbox, false)
         music.stopAllSounds()
         PlayerControl = true
         Direction = 1
         animation.runImageAnimation(
-        Sonic,
+        sonicHitbox,
         assets.animation`SVictoryR`,
         100,
         false
         )
-        Sonic.vx = 0
-        Sonic.vy = 0
+        sonicHitbox.vx = 0
+        sonicHitbox.vy = 0
         music.play(music.createSong(assets.song`Act Complete`), music.PlaybackMode.UntilDone)
         timer.after(1000, function () {
             game.reset()
@@ -368,7 +419,7 @@ sprites.onCreated(SpriteKind.InVal, function (sprite) {
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (sprite, otherSprite) {
     Direction = -1
-    Sonic.vx = -375
+    sonicHitbox.vx = -375
     Rolling = true
     animation.runImageAnimation(
     Springs,
@@ -412,10 +463,15 @@ let GrabberList: tiles.Location[] = []
 let SpindashMultiplier = 0
 let Direction = 0
 let Rolling = false
-let Sonic: Sprite = null
+let sonicOverlay: Sprite = null
+let sonicHitbox: Sprite = null
 let gamma = 0
 let alpha = 0
+let transforming = false
+let sonicSuperForm = false
 let BossPattern = 0
+sonicSuperForm = false
+transforming = false
 let BossStart = false
 namespace userconfig {
     export const ARCADE_SCREEN_WIDTH = 320
@@ -423,18 +479,19 @@ namespace userconfig {
 }
 alpha = 0.2
 gamma = 0.4
-Sonic = sprites.create(assets.image`Sonic Stand`, SpriteKind.Player)
-characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
+sonicHitbox = sprites.create(assets.image`Sonic Standhitbox`, SpriteKind.Player)
+sonicOverlay = sprites.create(assets.image`Sonic Stand`, SpriteKind.animOverlay)
+characterAnimations.setCharacterState(sonicHitbox, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
 scene.setBackgroundImage(assets.image`BG`)
 tiles.setCurrentTilemap(tilemap`level1`)
-Sonic.ay = 1250
-Sonic.z = 0
+sonicHitbox.ay = 1250
+sonicHitbox.z = 0
 Rolling = false
 Direction = 1
 SpindashMultiplier = 1
 scene.setBackgroundColor(7)
-tiles.placeOnTile(Sonic, tiles.getTileLocation(1, 51))
-characterAnimations.setCharacterAnimationsEnabled(Sonic, true)
+tiles.placeOnTile(sonicHitbox, tiles.getTileLocation(1, 51))
+characterAnimations.setCharacterAnimationsEnabled(sonicHitbox, true)
 StateMachine()
 Camera()
 spriteutils.setConsoleOverlay(false)
@@ -481,6 +538,9 @@ for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`))
     tiles.placeOnTile(Springs, LeftFacingYellowSprings)
     tiles.setTileAt(LeftFacingYellowSprings, assets.tile`myTile5`)
 }
+for (let overlayGhost of sprites.allOfKind(SpriteKind.animOverlay)) {
+    overlayGhost.setFlag(SpriteFlag.Ghost, true)
+}
 Hurt = false
 PlayerControl = true
 let BossHealth = 8
@@ -488,153 +548,161 @@ music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMod
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
+color.setColor(9, color.parseColorString("#4542FF"))
 game.onUpdate(function () {
-    if (PlayerControl == true) {
+    if (PlayerControl && !(transforming)) {
         if (Rolling == false) {
             if (controller.right.isPressed()) {
                 Direction = 1
-                Sonic.vx += 5
+                sonicHitbox.vx += 5
             } else if (controller.left.isPressed()) {
                 Direction = -1
-                Sonic.vx += -5
+                sonicHitbox.vx += -5
             } else {
-                Sonic.vx += Sonic.vx * -0.1
+                sonicHitbox.vx += sonicHitbox.vx * -0.1
             }
-            if (controller.right.isPressed() && Sonic.vx < 0) {
-                Sonic.vx += 10
-            } else if (controller.left.isPressed() && Sonic.vx > 0) {
-                Sonic.vx += -10
+            if (controller.right.isPressed() && sonicHitbox.vx < 0) {
+                sonicHitbox.vx += 10
+            } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
+                sonicHitbox.vx += -10
             }
-            if (Sonic.vx > 250) {
-                Sonic.vx = 250
-            } else if (Sonic.vx < -250) {
-                Sonic.vx = -250
+            if (sonicHitbox.vx > 250) {
+                sonicHitbox.vx = 250
+            } else if (sonicHitbox.vx < -250) {
+                sonicHitbox.vx = -250
             }
         } else {
-            Sonic.vx += Sonic.vx * -0.02
+            sonicHitbox.vx += sonicHitbox.vx * -0.02
         }
-        if (Sonic.vy == 0 || Rolling == false) {
-            if (Sonic.vy == 0 && Rolling == false) {
+        if (sonicHitbox.vy == 0 || Rolling == false) {
+            if (sonicHitbox.vy == 0 && Rolling == false) {
                 InstaUp = false
-                if (Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0) {
+                if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
                     if (controller.down.isPressed()) {
                         if (Direction == 1) {
-                            characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown))
+                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown))
                         } else if (Direction == -1) {
-                            characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown))
+                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown))
                         }
                     } else {
                         if (Direction == 1) {
-                            characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
+                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
                         } else if (Direction == -1) {
-                            characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft))
+                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft))
                         }
                     }
-                } else if (Sonic.vx > 9 && Sonic.vx < 200) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.Moving, Predicate.FacingRight))
-                } else if (Sonic.vx < -9 && Sonic.vx > -200) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft))
-                } else if (Sonic.vx > 199) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight))
-                } else if (Sonic.vx < -199) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft))
-                } else if (controller.right.isPressed() && Sonic.vx < 0) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
-                } else if (controller.left.isPressed() && Sonic.vx > 0) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
+                } else if (sonicHitbox.vx > 9 && sonicHitbox.vx < 200) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.Moving, Predicate.FacingRight))
+                } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft))
+                } else if (sonicHitbox.vx > 199) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight))
+                } else if (sonicHitbox.vx < -199) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft))
+                } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
+                } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
                 }
             } else {
-                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingUp))
+                characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
             }
         } else {
-            characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingUp))
+            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
         }
-        if (Math.abs(Sonic.vx) < 20) {
+        if (Math.abs(sonicHitbox.vx) < 20) {
             Rolling = false
         }
-        if (Sonic.vy != 0) {
+        if (sonicHitbox.vy != 0) {
             SpindashMultiplier = 1
         }
         if (SpindashMultiplier > 1) {
             Rolling = true
             if (Direction == 1) {
-                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingDown))
+                characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingDown))
             } else if (Direction == -1) {
-                characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown))
+                characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingDown))
             }
         }
-        if (!(Math.abs(Sonic.vx) < 10 && Math.abs(Sonic.vx) >= 0) || controller.anyButton.isPressed() || Sonic.vy != 0) {
+        if (!(Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) || controller.anyButton.isPressed() || sonicHitbox.vy != 0) {
             WaitTimer = 0
         } else {
             WaitTimer += 1
             if (WaitTimer > 240) {
                 WaitTimer = 240
                 if (Direction == 1) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp))
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp))
                 } else if (Direction == -1) {
-                    characterAnimations.setCharacterState(Sonic, characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp))
+                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp))
                 }
             }
         }
     }
-    if (Sonic.tilemapLocation().column > 22) {
-        Sonic.z = -10
+    if (sonicHitbox.tilemapLocation().column > 22) {
+        sonicHitbox.z = -10
         Camera()
     } else {
-        Sonic.z = 0
-        scene.centerCameraAt(Sonic.x, 800)
+        sonicHitbox.z = 0
+        scene.centerCameraAt(sonicHitbox.x, 800)
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
-        InstaPostion.setPosition(Sonic.x, Sonic.y + 7)
-        InstaPostion.z = Sonic.z
+        InstaPostion.setPosition(sonicHitbox.x, sonicHitbox.y + 7)
+        InstaPostion.z = sonicHitbox.z
     }
     for (let Slopes of sprites.allOfKind(SpriteKind.Slope)) {
-        if (!(Sonic.overlapsWith(Slopes))) {
-            Sonic.ay = 1250
-        } else {
-            Sonic.ay = 0
-            Sonic.vy = 0
-            Sonic.y += Math.abs(Sonic.vx) / -50 - 0.25
+        if (!(transforming)) {
+            if (!(sonicHitbox.overlapsWith(Slopes))) {
+                sonicHitbox.ay = 1250
+            } else {
+                sonicHitbox.ay = 0
+                sonicHitbox.vy = 0
+                sonicHitbox.y += Math.abs(sonicHitbox.vx) / -50 - 0.25
+            }
         }
     }
     for (let GrabVines2 of sprites.allOfKind(SpriteKind.Grab)) {
-        if (Sonic.overlapsWith(GrabVines2)) {
-            PlayerControl = false
-            characterAnimations.clearCharacterState(Sonic)
-            if (Direction == 1) {
-                animation.runImageAnimation(
-                Sonic,
-                assets.animation`SHangR`,
-                200,
-                false
-                )
-            } else if (Direction == -1) {
-                animation.runImageAnimation(
-                Sonic,
-                assets.animation`SHangL`,
-                200,
-                false
-                )
-            }
-            Sonic.ay = 0
-            Sonic.vx = 0
-            Sonic.vy = 0
-            Sonic.setPosition(GrabVines2.x, GrabVines2.y)
-            Direction = Math.abs(BallVelocity) / BallVelocity * -1
-            if (controller.A.isPressed()) {
-                Sonic.ay = 1250
+        if (!(transforming)) {
+            if (sonicHitbox.overlapsWith(GrabVines2)) {
+                PlayerControl = false
+                characterAnimations.clearCharacterState(sonicOverlay)
+                if (Direction == 1) {
+                    animation.runImageAnimation(
+                    sonicOverlay,
+                    assets.animation`SHangR`,
+                    200,
+                    false
+                    )
+                } else if (Direction == -1) {
+                    animation.runImageAnimation(
+                    sonicOverlay,
+                    assets.animation`SHangL`,
+                    200,
+                    false
+                    )
+                }
+                sonicHitbox.ay = 0
+                sonicHitbox.vx = 0
+                sonicHitbox.vy = 0
+                sonicHitbox.setPosition(GrabVines2.x, GrabVines2.y)
+                Direction = Math.abs(BallVelocity) / BallVelocity * -1
+                if (controller.A.isPressed()) {
+                    sonicHitbox.ay = 1250
+                    PlayerControl = true
+                    sonicHitbox.vy = -300
+                    sonicHitbox.vx = Direction * 200
+                    GrabVines2.setKind(SpriteKind.InVal)
+                    animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
+                    timer.after(500, function () {
+                        GrabVines2.setKind(SpriteKind.Grab)
+                    })
+                }
+            } else {
+                sonicHitbox.ay = 1250
                 PlayerControl = true
-                Sonic.vy = -300
-                Sonic.vx = Direction * 200
-                GrabVines2.setKind(SpriteKind.InVal)
-                animation.stopAnimation(animation.AnimationTypes.All, Sonic)
-                timer.after(500, function () {
-                    GrabVines2.setKind(SpriteKind.Grab)
-                })
             }
-        } else {
-            Sonic.ay = 1250
-            PlayerControl = true
         }
+    }
+    if (sonicOverlay) {
+        sonicOverlay.setPosition(sonicHitbox.x, sonicHitbox.y)
     }
 })
