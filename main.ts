@@ -11,6 +11,7 @@ namespace SpriteKind {
     export const YellowLeftSpring = SpriteKind.create()
     export const Grab = SpriteKind.create()
     export const animOverlay = SpriteKind.create()
+    export const placeRing = SpriteKind.create()
 }
 function StateMachine () {
     idleLeft = createFlipped(assets.animation`SStandR`)
@@ -123,9 +124,9 @@ function createFlipped (anim: Image[]) {
 function Camera () {
     if (PlayerControl == true) {
         if (Direction == 1) {
-            CameraTargetX = sonicHitbox.x + 35
+            CameraTargetX = sonicHitbox.x + 25
         } else if (Direction == -1) {
-            CameraTargetX = sonicHitbox.x - 35
+            CameraTargetX = sonicHitbox.x - 25
         } else {
             CameraTargetX = sonicHitbox.x
         }
@@ -295,6 +296,10 @@ function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
     }
     BallCurrentRadi += BallVelocity
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.placeRing, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite)
+    info.changeScoreBy(1)
+})
 spriteutils.createRenderable(0, function (screen2) {
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
         screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
@@ -383,7 +388,7 @@ sprites.onDestroyed(SpriteKind.Enemy, function (sprite) {
         PlayerControl = true
         Direction = 1
         animation.runImageAnimation(
-        sonicHitbox,
+        sonicOverlay,
         assets.animation`SVictoryR`,
         100,
         false
@@ -455,6 +460,7 @@ let walkLeft: Image[] = []
 let idleLeft: Image[] = []
 let PlayerControl = false
 let Hurt = false
+let rings: Sprite = null
 let Springs: Sprite = null
 let SlopeSprite: Sprite = null
 let RingBox: Sprite = null
@@ -538,9 +544,27 @@ for (let LeftFacingYellowSprings of tiles.getTilesByType(assets.tile`myTile19`))
     tiles.placeOnTile(Springs, LeftFacingYellowSprings)
     tiles.setTileAt(LeftFacingYellowSprings, assets.tile`myTile5`)
 }
+for (let ringPlaces of tiles.getTilesByType(assets.tile`myTile24`)) {
+    rings = sprites.create(assets.image`blank 16-16`, SpriteKind.placeRing)
+    tiles.placeOnTile(rings, ringPlaces)
+    if (tiles.tileAtLocationEquals(tiles.getTileLocation(ringPlaces.column, ringPlaces.row + 1), assets.tile`myTile3`) || tiles.tileAtLocationEquals(tiles.getTileLocation(ringPlaces.column, ringPlaces.row + 1), assets.tile`myTile4`)) {
+        tiles.setTileAt(ringPlaces, assets.tile`myTile5`)
+    } else {
+        tiles.setTileAt(ringPlaces, assets.tile`transparency16`)
+    }
+    animation.runImageAnimation(
+    rings,
+    assets.animation`ringAnimation`,
+    75,
+    true
+    )
+    rings.x += 4
+    rings.y += 4
+}
 for (let overlayGhost of sprites.allOfKind(SpriteKind.animOverlay)) {
     overlayGhost.setFlag(SpriteFlag.Ghost, true)
 }
+sonicHitbox.setFlag(SpriteFlag.Invisible, true)
 Hurt = false
 PlayerControl = true
 let BossHealth = 8
@@ -637,6 +661,7 @@ game.onUpdate(function () {
                 }
             }
         }
+        sonicOverlay.z = sonicHitbox.z
     }
     if (sonicHitbox.tilemapLocation().column > 22) {
         sonicHitbox.z = -10
