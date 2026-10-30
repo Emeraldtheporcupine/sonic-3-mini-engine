@@ -297,9 +297,9 @@ function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
 }
 spriteutils.createRenderable(0, function (screen2) {
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
-        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
-        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x - 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") - 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
-        screen2.drawLine(160 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x + 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 160 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") + 1)), 112 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
     }
 })
 spriteutils.createRenderable(0, function (screen2) {
@@ -470,12 +470,12 @@ let alpha = 0
 let transforming = false
 let sonicSuperForm = false
 let BossPattern = 0
+let BossStart = false
 sonicSuperForm = false
 transforming = false
-let BossStart = false
 namespace userconfig {
-    export const ARCADE_SCREEN_WIDTH = 320
-    export const ARCADE_SCREEN_HEIGHT = 224
+    export const ARCADE_SCREEN_WIDTH = 240
+    export const ARCADE_SCREEN_HEIGHT = 168
 }
 alpha = 0.2
 gamma = 0.4
