@@ -223,6 +223,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (PlayerControl == true) {
         if (!(controller.down.isPressed())) {
             if (sonicHitbox.vy == 0) {
+                jumping = true
                 SpindashMultiplier = 1
                 Rolling = false
                 sonicHitbox.vy = -425
@@ -272,6 +273,43 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
+function sonicStateMachine () {
+    if (sonicHitbox.vy == 0 && !(Rolling)) {
+        InstaUp = false
+        jumping = false
+        if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
+            if (controller.down.isPressed()) {
+                if (Direction == 1) {
+                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown)
+                } else if (Direction == -1) {
+                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
+                }
+            } else {
+                if (Direction == 1) {
+                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight)
+                } else if (Direction == -1) {
+                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft)
+                }
+            }
+        } else if (sonicHitbox.vx > 9 && sonicHitbox.vx < 200) {
+            tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingRight)
+        } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
+            tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
+        } else if (sonicHitbox.vx > 199) {
+            tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
+        } else if (sonicHitbox.vx < -199) {
+            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+        } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
+            tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
+        } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
+            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+        }
+    } else {
+        console.log("Roll " + Rolling + " jump " + jumping)
+        tempSonicState = characterAnimations.rule(Predicate.MovingUp)
+    }
+    return tempSonicState
+}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, otherSprite) {
     if (Rolling == true || sprite.vy != 0) {
         sprite.vy = -125
@@ -299,6 +337,7 @@ function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
 sprites.onOverlap(SpriteKind.Player, SpriteKind.placeRing, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
     info.changeScoreBy(1)
+    music.play(music.stringPlayable("C6~2 E6 G6 C7", 1048), music.PlaybackMode.InBackground)
 })
 spriteutils.createRenderable(0, function (screen2) {
     for (let GrabVines of sprites.allOfKind(SpriteKind.Grab)) {
@@ -444,7 +483,9 @@ let tempHandle: Sprite = null
 let BallVelocity = 0
 let BallCurrentRadi = 0
 let Radius = 0
+let tempSonicState = 0
 let InstaShield: Sprite = null
+let jumping = false
 let InstaUp = false
 let CurrentCameraX = 0
 let CurrentCameraY = 0
@@ -598,42 +639,7 @@ game.onUpdate(function () {
         } else {
             sonicHitbox.vx += sonicHitbox.vx * -0.02
         }
-        if (sonicHitbox.vy == 0 || Rolling == false) {
-            if (sonicHitbox.vy == 0 && Rolling == false) {
-                InstaUp = false
-                if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
-                    if (controller.down.isPressed()) {
-                        if (Direction == 1) {
-                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown))
-                        } else if (Direction == -1) {
-                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown))
-                        }
-                    } else {
-                        if (Direction == 1) {
-                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight))
-                        } else if (Direction == -1) {
-                            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft))
-                        }
-                    }
-                } else if (sonicHitbox.vx > 9 && sonicHitbox.vx < 200) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.Moving, Predicate.FacingRight))
-                } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft))
-                } else if (sonicHitbox.vx > 199) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight))
-                } else if (sonicHitbox.vx < -199) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft))
-                } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft))
-                } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight))
-                }
-            } else {
-                characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
-            }
-        } else {
-            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
-        }
+        characterAnimations.setCharacterState(sonicOverlay, sonicStateMachine())
         if (Math.abs(sonicHitbox.vx) < 20) {
             Rolling = false
         }
