@@ -274,7 +274,7 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
     }
 })
 function sonicStateMachine () {
-    if (sonicHitbox.vy == 0 && !(Rolling)) {
+    if (sonicHitbox.vy == 0 && (!(Rolling) && !(touchingSlopes))) {
         InstaUp = false
         jumping = false
         if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
@@ -298,7 +298,7 @@ function sonicStateMachine () {
         } else if (sonicHitbox.vx > 199) {
             tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
         } else if (sonicHitbox.vx < -199) {
-            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
         } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
             tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
         } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
@@ -484,6 +484,7 @@ let BallVelocity = 0
 let BallCurrentRadi = 0
 let Radius = 0
 let tempSonicState = 0
+let touchingSlopes = false
 let InstaShield: Sprite = null
 let jumping = false
 let InstaUp = false
@@ -646,6 +647,9 @@ game.onUpdate(function () {
         if (sonicHitbox.vy != 0) {
             SpindashMultiplier = 1
         }
+        if (sonicHitbox.vy == 0) {
+            jumping = false
+        }
         if (SpindashMultiplier > 1) {
             Rolling = true
             if (Direction == 1) {
@@ -683,8 +687,10 @@ game.onUpdate(function () {
     for (let Slopes of sprites.allOfKind(SpriteKind.Slope)) {
         if (!(transforming)) {
             if (!(sonicHitbox.overlapsWith(Slopes))) {
+                touchingSlopes = false
                 sonicHitbox.ay = 1250
             } else {
+                touchingSlopes = true
                 sonicHitbox.ay = 0
                 sonicHitbox.vy = 0
                 sonicHitbox.y += Math.abs(sonicHitbox.vx) / -50 - 0.25
