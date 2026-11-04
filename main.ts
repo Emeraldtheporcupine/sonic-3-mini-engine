@@ -370,6 +370,9 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
         music.play(music.createSoundEffect(WaveShape.Noise, 2388, 5000, 255, 0, 1000, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
+controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
+	
+})
 function InitVine (X: number, Y: number, Grabber: tiles.Location) {
     GrabberList.push(Grabber)
     Radius = 60
