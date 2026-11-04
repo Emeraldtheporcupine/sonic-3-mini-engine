@@ -173,9 +173,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         true
         )
         color.setColor(6, color.parseColorString("#fcfc00"))
-        timer.background(function () {
-            color.setColor(8, color.parseColorString("#b4b400"), 200)
-        })
+        color.setColor(8, color.parseColorString("#b4b400"))
         timer.after(500, function () {
             transforming = false
             animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
@@ -196,9 +194,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         false
         )
         color.setColor(6, color.parseColorString("#0040FF"))
-        timer.background(function () {
-            color.setColor(8, color.parseColorString("#00348F"), 500)
-        })
+        color.setColor(8, color.parseColorString("#00348F"))
         timer.after(500, function () {
             sonicSuperForm = false
             transforming = false
@@ -244,7 +240,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             }
         } else {
             if (sonicHitbox.vy == 0) {
-                music.play(music.createSoundEffect(WaveShape.Square, 446, 1071, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
+                music.play(music.createSoundEffect(WaveShape.Noise, 446, 1071, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
                 SpindashMultiplier = SpindashMultiplier * 1.5
                 if (SpindashMultiplier > 15) {
                     SpindashMultiplier = 15
@@ -274,9 +270,8 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
     }
 })
 function sonicStateMachine () {
-    if (sonicHitbox.vy == 0 && (!(Rolling) && !(touchingSlopes))) {
+    if (sonicHitbox.vy == 0 && (!(Rolling) && !(jumping))) {
         InstaUp = false
-        jumping = false
         if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
             if (controller.down.isPressed()) {
                 if (Direction == 1) {
@@ -304,14 +299,29 @@ function sonicStateMachine () {
         } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
             tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
         }
+    } else if (!(jumping) && sonicHitbox.vy != 0) {
+    	
     } else {
-        console.log("Roll " + Rolling + " jump " + jumping)
         tempSonicState = characterAnimations.rule(Predicate.MovingUp)
     }
     return tempSonicState
 }
+sprites.onDestroyed(SpriteKind.placeRing, function (sprite) {
+    sprite.setKind(SpriteKind.InVal)
+    sparkles = sprites.create(assets.image`blank 16-16`, SpriteKind.InVal)
+    sparkles.setPosition(sprite.x, sprite.y)
+    animation.runImageAnimation(
+    sparkles,
+    assets.animation`FLASHBANG`,
+    50,
+    false
+    )
+    timer.after(assets.animation`FLASHBANG`.length * 50, function () {
+        sprites.destroy(sparkles)
+    })
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, otherSprite) {
-    if (Rolling == true || sprite.vy != 0) {
+    if (Rolling || jumping) {
         sprite.vy = -125
         otherSprite.setKind(SpriteKind.NA)
         animation.runImageAnimation(
@@ -320,6 +330,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ItemBox, function (sprite, other
         50,
         true
         )
+        music.play(music.stringPlayable("C6~2 G6 C6", 1048), music.PlaybackMode.InBackground)
         info.changeScoreBy(10)
     }
 })
@@ -483,8 +494,8 @@ let tempHandle: Sprite = null
 let BallVelocity = 0
 let BallCurrentRadi = 0
 let Radius = 0
+let sparkles: Sprite = null
 let tempSonicState = 0
-let touchingSlopes = false
 let InstaShield: Sprite = null
 let jumping = false
 let InstaUp = false
@@ -504,7 +515,7 @@ let PlayerControl = false
 let Hurt = false
 let rings: Sprite = null
 let Springs: Sprite = null
-let SlopeSprite: Sprite = null
+let slopeSprite: Sprite = null
 let RingBox: Sprite = null
 let HandleList: Sprite[] = []
 let GrabberList: tiles.Location[] = []
@@ -517,8 +528,8 @@ let gamma = 0
 let alpha = 0
 let transforming = false
 let sonicSuperForm = false
-let BossPattern = 0
 let BossStart = false
+let BossPattern = 0
 sonicSuperForm = false
 transforming = false
 namespace userconfig {
@@ -534,6 +545,7 @@ scene.setBackgroundImage(assets.image`BG`)
 tiles.setCurrentTilemap(tilemap`level1`)
 sonicHitbox.ay = 1250
 sonicHitbox.z = 0
+let levelNumber = 1
 Rolling = false
 Direction = 1
 SpindashMultiplier = 1
@@ -541,7 +553,6 @@ scene.setBackgroundColor(7)
 tiles.placeOnTile(sonicHitbox, tiles.getTileLocation(1, 51))
 characterAnimations.setCharacterAnimationsEnabled(sonicHitbox, true)
 StateMachine()
-Camera()
 spriteutils.setConsoleOverlay(false)
 GrabberList = []
 HandleList = []
@@ -558,23 +569,23 @@ for (let RingBoxes of tiles.getTilesByType(assets.tile`myTile2`)) {
     RingBox.z = -10
 }
 for (let SlopeRightPlaces of tiles.getTilesByType(assets.tile`myTile`)) {
-    SlopeSprite = sprites.create(assets.image`SlopeUpRight`, SpriteKind.Slope)
-    tiles.placeOnTile(SlopeSprite, SlopeRightPlaces)
+    slopeSprite = sprites.create(assets.image`SlopeUpRight`, SpriteKind.Slope)
+    tiles.placeOnTile(slopeSprite, SlopeRightPlaces)
     tiles.setTileAt(SlopeRightPlaces, assets.tile`transparency16`)
-    SlopeSprite = sprites.create(assets.image`SlopeTop`, SpriteKind.Slope)
-    tiles.placeOnTile(SlopeSprite, tiles.getTileLocation(SlopeRightPlaces.column + 1, SlopeRightPlaces.row))
-    if (!(SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`transparency16`) || SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`myTile1`))) {
-        sprites.destroy(SlopeSprite)
+    slopeSprite = sprites.create(assets.image`SlopeTop`, SpriteKind.Slope)
+    tiles.placeOnTile(slopeSprite, tiles.getTileLocation(SlopeRightPlaces.column + 1, SlopeRightPlaces.row))
+    if (!(slopeSprite.tileKindAt(TileDirection.Center, assets.tile`transparency16`) || slopeSprite.tileKindAt(TileDirection.Center, assets.tile`myTile1`))) {
+        sprites.destroy(slopeSprite)
     }
 }
 for (let SlopeLeftPlaces of tiles.getTilesByType(assets.tile`myTile6`)) {
-    SlopeSprite = sprites.create(assets.image`SlopeUpLeft`, SpriteKind.Slope)
-    tiles.placeOnTile(SlopeSprite, SlopeLeftPlaces)
+    slopeSprite = sprites.create(assets.image`SlopeUpLeft`, SpriteKind.Slope)
+    tiles.placeOnTile(slopeSprite, SlopeLeftPlaces)
     tiles.setTileAt(SlopeLeftPlaces, assets.tile`transparency16`)
-    SlopeSprite = sprites.create(assets.image`SlopeTop`, SpriteKind.Slope)
-    tiles.placeOnTile(SlopeSprite, tiles.getTileLocation(SlopeLeftPlaces.column - 1, SlopeLeftPlaces.row))
-    if (!(SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`transparency16`) || SlopeSprite.tileKindAt(TileDirection.Center, assets.tile`myTile1`))) {
-        sprites.destroy(SlopeSprite)
+    slopeSprite = sprites.create(assets.image`SlopeTop`, SpriteKind.Slope)
+    tiles.placeOnTile(slopeSprite, tiles.getTileLocation(SlopeLeftPlaces.column - 1, SlopeLeftPlaces.row))
+    if (!(slopeSprite.tileKindAt(TileDirection.Center, assets.tile`transparency16`) || slopeSprite.tileKindAt(TileDirection.Center, assets.tile`myTile1`))) {
+        sprites.destroy(slopeSprite)
     }
 }
 for (let VineSwings of tiles.getTilesByType(assets.tile`myTile22`)) {
@@ -607,6 +618,7 @@ for (let overlayGhost of sprites.allOfKind(SpriteKind.animOverlay)) {
     overlayGhost.setFlag(SpriteFlag.Ghost, true)
 }
 sonicHitbox.setFlag(SpriteFlag.Invisible, true)
+sonicHitbox.setFlag(SpriteFlag.ShowPhysics, true)
 Hurt = false
 PlayerControl = true
 let BossHealth = 8
@@ -614,7 +626,8 @@ music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMod
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
-color.setColor(9, color.parseColorString("#4542FF"))
+let waterfallColor = color.parseColorString("#4542FF")
+Camera()
 game.onUpdate(function () {
     if (PlayerControl && !(transforming)) {
         if (Rolling == false) {
@@ -674,7 +687,9 @@ game.onUpdate(function () {
         sonicOverlay.z = sonicHitbox.z
     }
     if (sonicHitbox.tilemapLocation().column > 22) {
-        sonicHitbox.z = -10
+        if (true) {
+            sonicHitbox.z = -10
+        }
         Camera()
     } else {
         sonicHitbox.z = 0
@@ -684,21 +699,22 @@ game.onUpdate(function () {
         InstaPostion.setPosition(sonicHitbox.x, sonicHitbox.y + 7)
         InstaPostion.z = sonicHitbox.z
     }
-    for (let Slopes of sprites.allOfKind(SpriteKind.Slope)) {
-        if (!(transforming)) {
-            if (!(sonicHitbox.overlapsWith(Slopes))) {
-                touchingSlopes = false
-                sonicHitbox.ay = 1250
-            } else {
-                touchingSlopes = true
+    sonicHitbox.ay = 1250
+    PlayerControl = true
+    if (transforming) {
+        sonicHitbox.ay = 0
+    } else {
+        for (let slopeSprite2 of sprites.allOfKind(SpriteKind.Slope)) {
+            if (sonicHitbox.overlapsWith(slopeSprite2)) {
+                console.log("hello")
                 sonicHitbox.ay = 0
                 sonicHitbox.vy = 0
+                jumping = false
                 sonicHitbox.y += Math.abs(sonicHitbox.vx) / -50 - 0.25
+                break;
             }
         }
-    }
-    for (let GrabVines2 of sprites.allOfKind(SpriteKind.Grab)) {
-        if (!(transforming)) {
+        for (let GrabVines2 of sprites.allOfKind(SpriteKind.Grab)) {
             if (sonicHitbox.overlapsWith(GrabVines2)) {
                 PlayerControl = false
                 characterAnimations.clearCharacterState(sonicOverlay)
@@ -721,6 +737,7 @@ game.onUpdate(function () {
                 sonicHitbox.vx = 0
                 sonicHitbox.vy = 0
                 sonicHitbox.setPosition(GrabVines2.x, GrabVines2.y)
+                Camera()
                 Direction = Math.abs(BallVelocity) / BallVelocity * -1
                 if (controller.A.isPressed()) {
                     sonicHitbox.ay = 1250
@@ -733,13 +750,24 @@ game.onUpdate(function () {
                         GrabVines2.setKind(SpriteKind.Grab)
                     })
                 }
-            } else {
-                sonicHitbox.ay = 1250
-                PlayerControl = true
             }
         }
     }
     if (sonicOverlay) {
         sonicOverlay.setPosition(sonicHitbox.x, sonicHitbox.y)
+    }
+})
+game.onUpdateInterval(250, function () {
+    if (levelNumber == 1) {
+        if (waterfallColor == color.parseColorString("#5A67FF")) {
+            waterfallColor = color.parseColorString("#4542FF")
+        } else if (waterfallColor == color.parseColorString("#4542FF")) {
+            waterfallColor = color.parseColorString("#5967FF")
+        } else if (waterfallColor == color.parseColorString("#5967FF")) {
+            waterfallColor = color.parseColorString("#6987FF")
+        } else if (waterfallColor == color.parseColorString("#6987FF")) {
+            waterfallColor = color.parseColorString("#5A67FF")
+        }
+        color.setColor(9, waterfallColor)
     }
 })
