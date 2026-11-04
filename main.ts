@@ -531,8 +531,8 @@ let gamma = 0
 let alpha = 0
 let transforming = false
 let sonicSuperForm = false
-let BossStart = false
 let BossPattern = 0
+let BossStart = false
 sonicSuperForm = false
 transforming = false
 namespace userconfig {
@@ -631,6 +631,7 @@ scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
 scroller.setBackgroundScrollOffset(0, -118)
 let waterfallColor = color.parseColorString("#4542FF")
 Camera()
+game.stats = true
 game.onUpdate(function () {
     if (PlayerControl && !(transforming)) {
         if (Rolling == false) {
