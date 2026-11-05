@@ -20,6 +20,7 @@ function StateMachine () {
     crouchLeft = createFlipped(assets.animation`SCrouchR`)
     revLeft = createFlipped(assets.animation`SSpindashR`)
     waitLeft = createFlipped(assets.animation`SImpatientR`)
+    lookUpLeft = createFlipped(assets.animation`SLookUpR`)
     skidLeft = createFlipped(assets.animation`SSkidR`)
     characterAnimations.loopFrames(
     sonicOverlay,
@@ -101,6 +102,18 @@ function StateMachine () {
     )
     characterAnimations.loopFrames(
     sonicOverlay,
+    assets.animation`SLookUpR`,
+    200,
+    characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    lookUpLeft,
+    200,
+    characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
     assets.animation`SSkidR`,
     200,
     characterAnimations.rule(Predicate.FacingRight, Predicate.MovingLeft, Predicate.Moving)
@@ -174,13 +187,16 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         )
         color.setColor(6, color.parseColorString("#fcfc00"))
         color.setColor(8, color.parseColorString("#b4b400"))
+        superFlash = color.parseColorString("#fcfc00")
+        superFlashsecond = color.parseColorString("#b4b400")
         timer.after(500, function () {
             transforming = false
             animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
             characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
         })
     } else if (sonicHitbox.vy != 0 && sonicSuperForm) {
-        sonicSuperForm = true
+        sonicSuperForm = false
         transforming = true
         sonicHitbox.vx = 0
         sonicHitbox.vy = 0
@@ -196,10 +212,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
         color.setColor(6, color.parseColorString("#0040FF"))
         color.setColor(8, color.parseColorString("#00348F"))
         timer.after(500, function () {
-            sonicSuperForm = false
             transforming = false
             animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
             characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
         })
     }
 })
@@ -278,6 +294,12 @@ function sonicStateMachine () {
                     tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown)
                 } else if (Direction == -1) {
                     tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
+                }
+            } else if (controller.up.isPressed()) {
+                if (Direction == 1) {
+                    tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
+                } else if (Direction == -1) {
+                    tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
                 }
             } else {
                 if (Direction == 1) {
@@ -502,12 +524,15 @@ let tempSonicState = 0
 let InstaShield: Sprite = null
 let jumping = false
 let InstaUp = false
+let superFlashsecond = 0
+let superFlash = 0
 let CurrentCameraX = 0
 let CurrentCameraY = 0
 let CameraTargetX = 0
 let tempImage: Image = null
 let tempList: Image[] = []
 let skidLeft: Image[] = []
+let lookUpLeft: Image[] = []
 let waitLeft: Image[] = []
 let revLeft: Image[] = []
 let crouchLeft: Image[] = []
@@ -761,7 +786,7 @@ game.onUpdate(function () {
         sonicOverlay.setPosition(sonicHitbox.x, sonicHitbox.y)
     }
 })
-game.onUpdateInterval(250, function () {
+game.onUpdateInterval(500, function () {
     if (levelNumber == 1) {
         if (waterfallColor == color.parseColorString("#5A67FF")) {
             waterfallColor = color.parseColorString("#4542FF")
@@ -773,5 +798,27 @@ game.onUpdateInterval(250, function () {
             waterfallColor = color.parseColorString("#5A67FF")
         }
         color.setColor(9, waterfallColor)
+    }
+})
+game.onUpdateInterval(200, function () {
+    if (sonicSuperForm) {
+        if (superFlash == color.parseColorString("#fcfc91")) {
+            superFlash = color.parseColorString("#fcfc00")
+            superFlashsecond = color.parseColorString("#b4b400")
+        } else if (superFlash == color.parseColorString("#fcfc00")) {
+            superFlash = color.parseColorString("#fcfc90")
+            superFlashsecond = color.parseColorString("#cccc00")
+        } else if (superFlash == color.parseColorString("#fcfc90")) {
+            superFlash = color.parseColorString("#ffffff")
+            superFlashsecond = color.parseColorString("#fcfc00")
+        } else if (superFlash == color.parseColorString("#ffffff")) {
+            superFlash = color.parseColorString("#fcfc91")
+            superFlashsecond = color.parseColorString("#cccc00")
+        }
+        color.setColor(6, superFlash)
+        color.setColor(8, superFlashsecond)
+    } else {
+        color.setColor(6, color.parseColorString("#0040FF"))
+        color.setColor(8, color.parseColorString("#00348F"))
     }
 })
