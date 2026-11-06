@@ -12,6 +12,7 @@ namespace SpriteKind {
     export const Grab = SpriteKind.create()
     export const animOverlay = SpriteKind.create()
     export const placeRing = SpriteKind.create()
+    export const vineInval = SpriteKind.create()
 }
 function StateMachine () {
     idleLeft = createFlipped(assets.animation`SStandR`)
@@ -145,10 +146,10 @@ function Camera () {
         }
         if (Math.abs(scene.cameraProperty(CameraProperty.X) - CameraTargetX) > 2 || Math.abs(scene.cameraProperty(CameraProperty.Y) - CurrentCameraY) > 0) {
             if (CurrentCameraY < sonicHitbox.y) {
-                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) + (Math.abs(sonicHitbox.y) - CurrentCameraY) * gamma
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - cameraPlusY + (Math.abs(sonicHitbox.y) - CurrentCameraY) * gamma
             }
             if (CurrentCameraY > sonicHitbox.y) {
-                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - (CurrentCameraY - Math.abs(sonicHitbox.y)) * gamma
+                CurrentCameraY = scene.cameraProperty(CameraProperty.Y) - cameraPlusY - (CurrentCameraY - Math.abs(sonicHitbox.y)) * gamma
             }
             if (scene.cameraProperty(CameraProperty.X) < CameraTargetX) {
                 CurrentCameraX = scene.cameraProperty(CameraProperty.X) + (CameraTargetX - scene.cameraProperty(CameraProperty.X)) * alpha
@@ -286,6 +287,7 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
     }
 })
 function sonicStateMachine () {
+    cameraPlusY = 0
     if (sonicHitbox.vy == 0 && (!(Rolling) && !(jumping))) {
         InstaUp = false
         if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
@@ -295,12 +297,16 @@ function sonicStateMachine () {
                 } else if (Direction == -1) {
                     tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
                 }
+                if (SpindashMultiplier == 1) {
+                    cameraPlusY = -5
+                }
             } else if (controller.up.isPressed()) {
                 if (Direction == 1) {
                     tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
                 } else if (Direction == -1) {
                     tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
                 }
+                cameraPlusY = 5
             } else {
                 if (Direction == 1) {
                     tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight)
@@ -377,6 +383,11 @@ spriteutils.createRenderable(0, function (screen2) {
         screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - GrabVines.x), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(GrabVines, "SpawnX")), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
         screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
         screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (GrabVines.x + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - GrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(GrabVines, "SpawnX") + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(GrabVines, "SpawnY")), 5)
+    }
+    for (let ungrabVines of sprites.allOfKind(SpriteKind.vineInval)) {
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - ungrabVines.x), 84 - (scene.cameraProperty(CameraProperty.Y) - ungrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - sprites.readDataNumber(ungrabVines, "SpawnX")), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(ungrabVines, "SpawnY")), 5)
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (ungrabVines.x - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - ungrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(ungrabVines, "SpawnX") - 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(ungrabVines, "SpawnY")), 5)
+        screen2.drawLine(120 - (scene.cameraProperty(CameraProperty.X) - (ungrabVines.x + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - ungrabVines.y), 120 - (scene.cameraProperty(CameraProperty.X) - (sprites.readDataNumber(ungrabVines, "SpawnX") + 1)), 84 - (scene.cameraProperty(CameraProperty.Y) - sprites.readDataNumber(ungrabVines, "SpawnY")), 5)
     }
 })
 spriteutils.createRenderable(0, function (screen2) {
@@ -502,7 +513,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.YellowLeftSpring, function (spri
     sonicHitbox.vx = -375
     Rolling = true
     animation.runImageAnimation(
-    Springs,
+    otherSprite,
     assets.animation`YSpringLBounce`,
     50,
     false
@@ -556,6 +567,8 @@ let gamma = 0
 let alpha = 0
 let transforming = false
 let sonicSuperForm = false
+let cameraPlusY = 0
+cameraPlusY = 0
 let BossPattern = 0
 let BossStart = false
 sonicSuperForm = false
@@ -722,6 +735,7 @@ game.onUpdate(function () {
         Camera()
     } else {
         sonicHitbox.z = 0
+        CurrentCameraY = sonicHitbox.y
         scene.centerCameraAt(sonicHitbox.x, 800)
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
@@ -773,7 +787,7 @@ game.onUpdate(function () {
                     PlayerControl = true
                     sonicHitbox.vy = -300
                     sonicHitbox.vx = Direction * 200
-                    GrabVines2.setKind(SpriteKind.InVal)
+                    GrabVines2.setKind(SpriteKind.vineInval)
                     animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
                     timer.after(500, function () {
                         GrabVines2.setKind(SpriteKind.Grab)
