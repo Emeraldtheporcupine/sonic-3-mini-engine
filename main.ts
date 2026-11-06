@@ -257,7 +257,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             }
         } else {
             if (sonicHitbox.vy == 0) {
-                music.play(music.createSoundEffect(WaveShape.Noise, 446, 1071, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
+                music.play(music.createSoundEffect(WaveShape.Noise, 1479, 3100, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
                 SpindashMultiplier = SpindashMultiplier * 1.5
                 if (SpindashMultiplier > 15) {
                     SpindashMultiplier = 15
@@ -568,9 +568,9 @@ let alpha = 0
 let transforming = false
 let sonicSuperForm = false
 let cameraPlusY = 0
-cameraPlusY = 0
-let BossPattern = 0
 let BossStart = false
+let BossPattern = 0
+cameraPlusY = 0
 sonicSuperForm = false
 transforming = false
 namespace userconfig {
