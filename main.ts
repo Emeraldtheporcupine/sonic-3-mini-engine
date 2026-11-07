@@ -172,53 +172,7 @@ scene.onHitWall(SpriteKind.DropRing, function (sprite, location) {
     }
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (sonicHitbox.vy != 0 && !(sonicSuperForm)) {
-        sonicSuperForm = true
-        transforming = true
-        sonicHitbox.vx = 0
-        sonicHitbox.vy = 0
-        sonicHitbox.ay = 0
-        characterAnimations.clearCharacterState(sonicOverlay)
-        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
-        animation.runImageAnimation(
-        sonicOverlay,
-        assets.animation`STransformR`,
-        100,
-        true
-        )
-        color.setColor(6, color.parseColorString("#fcfc00"))
-        color.setColor(8, color.parseColorString("#b4b400"))
-        superFlash = color.parseColorString("#fcfc00")
-        superFlashsecond = color.parseColorString("#b4b400")
-        timer.after(500, function () {
-            transforming = false
-            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
-            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
-            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
-        })
-    } else if (sonicHitbox.vy != 0 && sonicSuperForm) {
-        sonicSuperForm = false
-        transforming = true
-        sonicHitbox.vx = 0
-        sonicHitbox.vy = 0
-        sonicHitbox.ay = 0
-        characterAnimations.clearCharacterState(sonicOverlay)
-        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
-        animation.runImageAnimation(
-        sonicOverlay,
-        assets.animation`STransformR`,
-        100,
-        false
-        )
-        color.setColor(6, color.parseColorString("#0040FF"))
-        color.setColor(8, color.parseColorString("#00348F"))
-        timer.after(500, function () {
-            transforming = false
-            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
-            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
-            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
-        })
-    }
+	
 })
 function PlayerHurt (enemyX: number) {
     if (Hurt == false) {
@@ -242,18 +196,22 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
                 sonicHitbox.vy = -425
                 music.play(music.createSoundEffect(WaveShape.Square, 642, 2015, 255, 0, 300, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             } else if (InstaUp == false) {
-                InstaUp = true
-                InstaShield = sprites.create(assets.image`blank_32-32`, SpriteKind.Attack)
-                animation.runImageAnimation(
-                InstaShield,
-                assets.animation`InstaShield`,
-                50,
-                false
-                )
-                timer.after(250, function () {
-                    sprites.destroy(InstaShield)
-                })
-                music.play(music.createSoundEffect(WaveShape.Noise, 3520, 3748, 255, 0, 100, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
+                if (info.score() >= 50) {
+                    superForm()
+                } else {
+                    InstaUp = true
+                    InstaShield = sprites.create(assets.image`blank_32-32`, SpriteKind.Attack)
+                    animation.runImageAnimation(
+                    InstaShield,
+                    assets.animation`InstaShield`,
+                    50,
+                    false
+                    )
+                    timer.after(250, function () {
+                        sprites.destroy(InstaShield)
+                    })
+                    music.play(music.createSoundEffect(WaveShape.Noise, 3520, 3748, 255, 0, 100, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
+                }
             }
         } else {
             if (sonicHitbox.vy == 0) {
@@ -318,9 +276,9 @@ function sonicStateMachine () {
             tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingRight)
         } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
             tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
-        } else if (sonicHitbox.vx > 199) {
+        } else if (sonicHitbox.vx > 214) {
             tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
-        } else if (sonicHitbox.vx < -199) {
+        } else if (sonicHitbox.vx < -214) {
             tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
         } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
             tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
@@ -372,6 +330,55 @@ function SetHandlePosition (CenterX: number, CenterY: number, Handle: Sprite) {
         BallVelocity = -0.025
     }
     BallCurrentRadi += BallVelocity
+}
+function superForm () {
+    if (sonicHitbox.vy != 0 && !(sonicSuperForm)) {
+        sonicSuperForm = true
+        transforming = true
+        sonicHitbox.vx = 0
+        sonicHitbox.vy = 0
+        sonicHitbox.ay = 0
+        characterAnimations.clearCharacterState(sonicOverlay)
+        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
+        animation.runImageAnimation(
+        sonicOverlay,
+        assets.animation`STransformR`,
+        100,
+        true
+        )
+        color.setColor(6, color.parseColorString("#fcfc00"))
+        color.setColor(8, color.parseColorString("#b4b400"))
+        superFlash = color.parseColorString("#fcfc00")
+        superFlashsecond = color.parseColorString("#b4b400")
+        timer.after(500, function () {
+            transforming = false
+            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
+            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
+        })
+    } else if (sonicHitbox.vy != 0 && sonicSuperForm) {
+        sonicSuperForm = false
+        transforming = true
+        sonicHitbox.vx = 0
+        sonicHitbox.vy = 0
+        sonicHitbox.ay = 0
+        characterAnimations.clearCharacterState(sonicOverlay)
+        characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, false)
+        animation.runImageAnimation(
+        sonicOverlay,
+        assets.animation`STransformR`,
+        100,
+        false
+        )
+        color.setColor(6, color.parseColorString("#0040FF"))
+        color.setColor(8, color.parseColorString("#00348F"))
+        timer.after(500, function () {
+            transforming = false
+            animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
+            characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
+            characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
+        })
+    }
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.placeRing, function (sprite, otherSprite) {
     sprites.destroy(otherSprite)
@@ -527,6 +534,8 @@ let WaitTimer = 0
 let Gibblets: Sprite[] = []
 let AmountOfRings = 0
 let tempHandle: Sprite = null
+let superFlashsecond = 0
+let superFlash = 0
 let BallVelocity = 0
 let BallCurrentRadi = 0
 let Radius = 0
@@ -535,8 +544,6 @@ let tempSonicState = 0
 let InstaShield: Sprite = null
 let jumping = false
 let InstaUp = false
-let superFlashsecond = 0
-let superFlash = 0
 let CurrentCameraX = 0
 let CurrentCameraY = 0
 let CameraTargetX = 0
@@ -666,7 +673,7 @@ let BossHealth = 8
 music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMode.LoopingInBackground)
 scroller.setCameraScrollingMultipliers(0.35, 0.2)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.BothDirections)
-scroller.setBackgroundScrollOffset(0, -118)
+scroller.setBackgroundScrollOffset(0, 0)
 let waterfallColor = color.parseColorString("#4542FF")
 Camera()
 game.stats = true
