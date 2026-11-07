@@ -23,6 +23,7 @@ function StateMachine () {
     waitLeft = createFlipped(assets.animation`SImpatientR`)
     lookUpLeft = createFlipped(assets.animation`SLookUpR`)
     superIdleLeft = createFlipped(assets.animation`SSuperStand`)
+    superLookUpLeft = createFlipped(assets.animation`SSuperLookUp`)
     superSprintLeft = createFlipped(assets.animation`SSuperSprint`)
     skidLeft = createFlipped(assets.animation`SSkidR`)
     characterAnimations.loopFrames(
@@ -126,6 +127,18 @@ function StateMachine () {
     superIdleLeft,
     100,
     characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallLeft)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    assets.animation`SSuperLookUp`,
+    100,
+    characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.HittingWallRight, Predicate.FacingUp)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    superLookUpLeft,
+    100,
+    characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallLeft, Predicate.FacingUp)
     )
     characterAnimations.loopFrames(
     sonicOverlay,
@@ -327,9 +340,9 @@ function sonicStateMachine () {
                     }
                 } else if (controller.up.isPressed()) {
                     if (Direction == 1) {
-                        tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.HittingWallRight, Predicate.FacingUp)
                     } else if (Direction == -1) {
-                        tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallLeft, Predicate.FacingUp)
                     }
                     cameraPlusY = 5
                 } else {
@@ -637,6 +650,7 @@ let tempImage: Image = null
 let tempList: Image[] = []
 let skidLeft: Image[] = []
 let superSprintLeft: Image[] = []
+let superLookUpLeft: Image[] = []
 let superIdleLeft: Image[] = []
 let lookUpLeft: Image[] = []
 let waitLeft: Image[] = []
