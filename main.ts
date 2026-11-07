@@ -223,7 +223,9 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
                 music.play(music.createSoundEffect(WaveShape.Square, 642, 2015, 255, 0, 300, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
             } else if (InstaUp == false) {
                 if (info.score() >= 50) {
-                    superForm()
+                    if (!(sonicSuperForm)) {
+                        superForm()
+                    }
                 } else {
                     InstaUp = true
                     InstaShield = sprites.create(assets.image`blank_32-32`, SpriteKind.Attack)
