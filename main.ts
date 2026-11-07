@@ -22,6 +22,8 @@ function StateMachine () {
     revLeft = createFlipped(assets.animation`SSpindashR`)
     waitLeft = createFlipped(assets.animation`SImpatientR`)
     lookUpLeft = createFlipped(assets.animation`SLookUpR`)
+    superIdleLeft = createFlipped(assets.animation`SSuperStand`)
+    superSprintLeft = createFlipped(assets.animation`SSuperSprint`)
     skidLeft = createFlipped(assets.animation`SSkidR`)
     characterAnimations.loopFrames(
     sonicOverlay,
@@ -112,6 +114,30 @@ function StateMachine () {
     lookUpLeft,
     200,
     characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    assets.animation`SSuperStand`,
+    100,
+    characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.HittingWallRight)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    superIdleLeft,
+    100,
+    characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallLeft)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    assets.animation`SSuperSprint`,
+    100,
+    characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight, Predicate.Moving)
+    )
+    characterAnimations.loopFrames(
+    sonicOverlay,
+    superSprintLeft,
+    100,
+    characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft, Predicate.Moving)
     )
     characterAnimations.loopFrames(
     sonicOverlay,
@@ -248,42 +274,74 @@ function sonicStateMachine () {
     cameraPlusY = 0
     if (sonicHitbox.vy == 0 && (!(Rolling) && !(jumping))) {
         InstaUp = false
-        if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
-            if (controller.down.isPressed()) {
-                if (Direction == 1) {
-                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown)
-                } else if (Direction == -1) {
-                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
+        if (!(sonicSuperForm)) {
+            if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
+                if (controller.down.isPressed()) {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
+                    }
+                    if (SpindashMultiplier == 1) {
+                        cameraPlusY = -5
+                    }
+                } else if (controller.up.isPressed()) {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
+                    }
+                    cameraPlusY = 5
+                } else {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft)
+                    }
                 }
-                if (SpindashMultiplier == 1) {
-                    cameraPlusY = -5
-                }
-            } else if (controller.up.isPressed()) {
-                if (Direction == 1) {
-                    tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
-                } else if (Direction == -1) {
-                    tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
-                }
-                cameraPlusY = 5
-            } else {
-                if (Direction == 1) {
-                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight)
-                } else if (Direction == -1) {
-                    tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft)
-                }
+            } else if (sonicHitbox.vx > 9 && sonicHitbox.vx < 200) {
+                tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingRight)
+            } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
+                tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
+            } else if (sonicHitbox.vx > 214) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
+            } else if (sonicHitbox.vx < -214) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
+            } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
+            } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
             }
-        } else if (sonicHitbox.vx > 9 && sonicHitbox.vx < 200) {
-            tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingRight)
-        } else if (sonicHitbox.vx < -9 && sonicHitbox.vx > -200) {
-            tempSonicState = characterAnimations.rule(Predicate.Moving, Predicate.FacingLeft)
-        } else if (sonicHitbox.vx > 214) {
-            tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight)
-        } else if (sonicHitbox.vx < -214) {
-            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft)
-        } else if (controller.right.isPressed() && sonicHitbox.vx < 0) {
-            tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingLeft)
-        } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
-            tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingRight)
+        } else {
+            if (Math.abs(sonicHitbox.vx) < 10 && Math.abs(sonicHitbox.vx) >= 0) {
+                if (controller.down.isPressed()) {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.FacingDown)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.FacingDown)
+                    }
+                    if (SpindashMultiplier == 1) {
+                        cameraPlusY = -5
+                    }
+                } else if (controller.up.isPressed()) {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp, Predicate.NotMoving)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp, Predicate.NotMoving)
+                    }
+                    cameraPlusY = 5
+                } else {
+                    if (Direction == 1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingRight, Predicate.HittingWallRight)
+                    } else if (Direction == -1) {
+                        tempSonicState = characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallLeft)
+                    }
+                }
+            } else if (sonicHitbox.vx > 9) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingRight, Predicate.FacingRight, Predicate.Moving)
+            } else if (sonicHitbox.vx < -9) {
+                tempSonicState = characterAnimations.rule(Predicate.MovingLeft, Predicate.FacingLeft, Predicate.Moving)
+            }
         }
     } else if (!(jumping) && sonicHitbox.vy != 0) {
     	
@@ -346,11 +404,23 @@ function superForm () {
         100,
         true
         )
+        music.stopAllSounds()
+        music.play(music.createSoundEffect(
+        WaveShape.Noise,
+        5000,
+        15000,
+        255,
+        78,
+        750,
+        SoundExpressionEffect.None,
+        InterpolationCurve.Linear
+        ), music.PlaybackMode.InBackground)
         color.setColor(6, color.parseColorString("#fcfc00"))
         color.setColor(8, color.parseColorString("#b4b400"))
         superFlash = color.parseColorString("#fcfc00")
         superFlashsecond = color.parseColorString("#b4b400")
         timer.after(500, function () {
+            music.play(music.createSong(assets.song`SuperForm`), music.PlaybackMode.LoopingInBackground)
             transforming = false
             animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
             characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
@@ -370,6 +440,17 @@ function superForm () {
         100,
         false
         )
+        music.stopAllSounds()
+        music.play(music.createSoundEffect(
+        WaveShape.Noise,
+        15000,
+        5000,
+        255,
+        78,
+        750,
+        SoundExpressionEffect.None,
+        InterpolationCurve.Linear
+        ), music.PlaybackMode.InBackground)
         color.setColor(6, color.parseColorString("#0040FF"))
         color.setColor(8, color.parseColorString("#00348F"))
         timer.after(500, function () {
@@ -377,6 +458,9 @@ function superForm () {
             animation.stopAnimation(animation.AnimationTypes.All, sonicOverlay)
             characterAnimations.setCharacterAnimationsEnabled(sonicOverlay, true)
             characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.MovingUp))
+            if (levelNumber == 1) {
+                music.play(music.createSong(assets.song`Sky-High Isle Act 1`), music.PlaybackMode.LoopingInBackground)
+            }
         })
     }
 }
@@ -550,6 +634,8 @@ let CameraTargetX = 0
 let tempImage: Image = null
 let tempList: Image[] = []
 let skidLeft: Image[] = []
+let superSprintLeft: Image[] = []
+let superIdleLeft: Image[] = []
 let lookUpLeft: Image[] = []
 let waitLeft: Image[] = []
 let revLeft: Image[] = []
@@ -568,6 +654,7 @@ let GrabberList: tiles.Location[] = []
 let SpindashMultiplier = 0
 let Direction = 0
 let Rolling = false
+let levelNumber = 0
 let sonicOverlay: Sprite = null
 let sonicHitbox: Sprite = null
 let gamma = 0
@@ -593,7 +680,7 @@ scene.setBackgroundImage(assets.image`BG`)
 tiles.setCurrentTilemap(tilemap`level1`)
 sonicHitbox.ay = 1250
 sonicHitbox.z = 0
-let levelNumber = 1
+levelNumber = 1
 Rolling = false
 Direction = 1
 SpindashMultiplier = 1
@@ -680,24 +767,36 @@ game.stats = true
 game.onUpdate(function () {
     if (PlayerControl && !(transforming)) {
         if (Rolling == false) {
-            if (controller.right.isPressed()) {
-                Direction = 1
-                sonicHitbox.vx += 5
-            } else if (controller.left.isPressed()) {
-                Direction = -1
-                sonicHitbox.vx += -5
+            if (!(sonicSuperForm)) {
+                if (controller.right.isPressed()) {
+                    Direction = 1
+                    sonicHitbox.vx += 5
+                } else if (controller.left.isPressed()) {
+                    Direction = -1
+                    sonicHitbox.vx += -5
+                } else {
+                    sonicHitbox.vx += sonicHitbox.vx * -0.1
+                }
+                if (controller.right.isPressed() && sonicHitbox.vx < 0) {
+                    sonicHitbox.vx += 10
+                } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
+                    sonicHitbox.vx += -10
+                }
+                if (sonicHitbox.vx > 250) {
+                    sonicHitbox.vx = 250
+                } else if (sonicHitbox.vx < -250) {
+                    sonicHitbox.vx = -250
+                }
             } else {
-                sonicHitbox.vx += sonicHitbox.vx * -0.1
-            }
-            if (controller.right.isPressed() && sonicHitbox.vx < 0) {
-                sonicHitbox.vx += 10
-            } else if (controller.left.isPressed() && sonicHitbox.vx > 0) {
-                sonicHitbox.vx += -10
-            }
-            if (sonicHitbox.vx > 250) {
-                sonicHitbox.vx = 250
-            } else if (sonicHitbox.vx < -250) {
-                sonicHitbox.vx = -250
+                if (controller.right.isPressed()) {
+                    sonicHitbox.vx = 400
+                    Direction = 1
+                } else if (controller.left.isPressed()) {
+                    sonicHitbox.vx = -400
+                    Direction = -1
+                } else {
+                    sonicHitbox.vx += sonicHitbox.vx * -0.5
+                }
             }
         } else {
             sonicHitbox.vx += sonicHitbox.vx * -0.02
@@ -726,24 +825,26 @@ game.onUpdate(function () {
             WaitTimer += 1
             if (WaitTimer > 240) {
                 WaitTimer = 240
-                if (Direction == 1) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp))
-                } else if (Direction == -1) {
-                    characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp))
+                if (!(sonicSuperForm)) {
+                    if (Direction == 1) {
+                        characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingRight, Predicate.FacingUp))
+                    } else if (Direction == -1) {
+                        characterAnimations.setCharacterState(sonicOverlay, characterAnimations.rule(Predicate.FacingLeft, Predicate.FacingUp))
+                    }
                 }
             }
         }
         sonicOverlay.z = sonicHitbox.z
-    }
-    if (sonicHitbox.tilemapLocation().column > 22) {
-        if (true) {
-            sonicHitbox.z = -10
+        if (sonicHitbox.tilemapLocation().column > 22) {
+            if (true) {
+                sonicHitbox.z = -10
+            }
+            Camera()
+        } else {
+            sonicHitbox.z = 0
+            CurrentCameraY = sonicHitbox.y
+            scene.centerCameraAt(sonicHitbox.x, 800)
         }
-        Camera()
-    } else {
-        sonicHitbox.z = 0
-        CurrentCameraY = sonicHitbox.y
-        scene.centerCameraAt(sonicHitbox.x, 800)
     }
     for (let InstaPostion of sprites.allOfKind(SpriteKind.Attack)) {
         InstaPostion.setPosition(sonicHitbox.x, sonicHitbox.y + 7)
